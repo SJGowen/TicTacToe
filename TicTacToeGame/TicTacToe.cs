@@ -5,74 +5,53 @@ namespace TicTacToeGame
     // The TicTacToe class enables two players to play TicTacToe
     class TicTacToe
     {
-        private static char[] Players = { 'X', 'O' };
-
         static void Main(string[] args)
         {
             // Stores the locaions each player has moved
             int[] playerPositions = { 0, 0 };
-            // Set the starting player to a random player
-            var random = new Random();
-            var currentPlayer = random.Next(1, 3);
-            // Winning player
-            var winner = 0;
+            // Players are 'X' and '0'
+            char[] players = { 'X', 'O' };
+            // Set the starting player to player 'X'
+            var currentPlayer = 1;
             string input = null;
             // Display the board and prompt the currentPlayer for his next move
-            for (var turn = 1; turn <= 10; turn++)
+            do
             {
-                if (input != "q") DisplayBoard(playerPositions);
+                DisplayBoard(players, playerPositions);
 
-                #region Check for End Game
-                if (EndGame(winner, turn, input)) break;
-                #endregion Check for End Game
+                input = NextMove(players, playerPositions, currentPlayer);
 
-                input = NextMove(playerPositions, currentPlayer);
+                currentPlayer = (currentPlayer == 1) ? 2 : 1; // Switch Players
 
-                winner = DetermineWinner(playerPositions);
-
-                // Switch Players
-                currentPlayer = (currentPlayer == 1) ? 2 : 1;
-            }
+            } while (!GameOver(players, playerPositions, input));
             Console.ReadLine();
         }
 
-        private static bool EndGame(int winner, int turn, string input)
+        private static bool GameOver(char[] players, int[] playerPositions, string input)
         {
-            var endGame = false;
+            var gameOver = false;
+            var winner = DetermineWinner(playerPositions);
             if (winner > 0)
             {
-                Console.WriteLine($"\nPlayer '{Players[winner - 1]}' has won!!!");
-                endGame = true;
+                DisplayBoard(players, playerPositions);
+                Console.Write($"\nPlayer '{players[winner - 1]}' has won!!!");
+                gameOver = true;
             }
-            else if (turn == 10)
+            else if (playerPositions[0] + playerPositions[1] == 511)
+            { // All possible squares have been filled
+                DisplayBoard(players, playerPositions);
+                Console.Write($"\nThe Game was a tie!");
+                gameOver = true;
+            }
+            else if (input.ToLower() == "q")
             {
-                Console.WriteLine($"\nThe Game was a tie!");
-                endGame = true;
+                Console.Write($"\nPlayer, has quit the game");
+                gameOver = true;
             }
-            else if (input == "q")
-            {
-                Console.WriteLine($"\nPlayer, has quit the game");
-                endGame = true;
-            }
-            return endGame;
+            return gameOver;
         }
 
-        private static void DisplayBoard(int[] playerPositions)
-        {
-            string[] borders =
-            {
-                "|", "|", "\n---+---+---\n", "|", "|", "\n---+---+---\n", "|", "|", ""
-            };
-            // Display the current board
-            var border = 0; // set the first border (border[0] = "|").
-            for (var position = 1; position <= 256; position <<= 1, border++)
-            {
-                char token = CalculateToken(playerPositions, position);
-                Console.Write($" {token} {borders[border]}");
-            }
-        }
-
-        private static string NextMove(int[] playerPositions, int currentPlayer)
+        private static string NextMove(char[] players, int[] playerPositions, int currentPlayer)
         {
             string input;
 
@@ -80,9 +59,9 @@ namespace TicTacToeGame
             bool validMove;
             do
             {
-                Console.WriteLine($"\nPlayer '{Players[currentPlayer - 1]}' - Enter move:");
+                Console.Write($"\nPlayer '{players[currentPlayer - 1]}' - Enter move: ");
                 input = Console.ReadLine();
-                validMove = ValidateAndMove(playerPositions, currentPlayer, input);
+                validMove = ValidateAndMove(players, playerPositions, currentPlayer, input);
             } while (!validMove);
 
             return input;
@@ -110,16 +89,31 @@ namespace TicTacToeGame
             return winner;
         }
 
-        private static char CalculateToken(int[] playerPositions, int position)
+        private static void DisplayBoard(char[] players, int[] playerPositions)
+        {
+            string[] borders =
+            {
+                "|", "|", "\n---+---+---\n", "|", "|", "\n---+---+---\n", "|", "|", ""
+            };
+            // Display the current board
+            var border = 0; // set the first border (border[0] = "|").
+            for (var position = 1; position <= 256; position <<= 1, border++)
+            {
+                char token = CalculateToken(players, playerPositions, position);
+                Console.Write($" {token} {borders[border]}");
+            }
+        }
+
+        private static char CalculateToken(char[] players, int[] playerPositions, int position)
         {
             char token;
             if ((position & playerPositions[0]) == position)
             {
-                token = Players[0]; // player 'X' has that position marked.
+                token = players[0]; // player 'X' has that position marked.
             }
             else if ((position & playerPositions[1]) == position)
             {
-                token = Players[1]; // player 'O' has that position marked.
+                token = players[1]; // player 'O' has that position marked.
             }
             else
             {
@@ -128,7 +122,7 @@ namespace TicTacToeGame
             return token;
         }
 
-        private static bool ValidateAndMove(int[] playerPositions, int currentPlayer, string input)
+        private static bool ValidateAndMove(char[] players, int[] playerPositions, int currentPlayer, string input)
         {
             var valid = false;
             switch (input)
@@ -146,9 +140,9 @@ namespace TicTacToeGame
                     var position = 1 << shifter; // The bit which is to be set
                     // Could use a string to record the input, and only if input not in string then input is valid
                     // but we already have similar functionality called from DisplayBoard i.e. CalculateToken
-                    if (CalculateToken(playerPositions, position) != ' ')
+                    if (CalculateToken(players, playerPositions, position) != ' ')
                     {
-                        Console.WriteLine($"ERROR: Square {input} has already been played!");
+                        Console.Write($"\nERROR: Square {input} has already been played!");
                     }
                     else
                     {
@@ -157,12 +151,13 @@ namespace TicTacToeGame
                     }
                     break;
                 case "q":
+                case "Q":
                     valid = true;
                     break;
                 default:
                     // if none of the other case statements
                     // is encountered, then the text is invalid.
-                    Console.WriteLine("ERROR: Enter a value from 1-9. Type 'q' to quit");
+                    Console.Write("\nERROR: Enter a value from 1-9. Type 'q' to quit");
                     break;
             }
             return valid;
