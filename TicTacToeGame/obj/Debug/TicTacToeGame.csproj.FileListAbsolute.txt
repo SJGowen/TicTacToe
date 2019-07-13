@@ -1,5 +1,0 @@
-C:\Dev\CSharp\TicTacToeGame\TicTacToeGame\bin\Debug\TicTacToeGame.exe.config
-C:\Dev\CSharp\TicTacToeGame\TicTacToeGame\bin\Debug\TicTacToeGame.exe
-C:\Dev\CSharp\TicTacToeGame\TicTacToeGame\bin\Debug\TicTacToeGame.pdb
-C:\Dev\CSharp\TicTacToeGame\TicTacToeGame\obj\Debug\TicTacToeGame.exe
-C:\Dev\CSharp\TicTacToeGame\TicTacToeGame\obj\Debug\TicTacToeGame.pdb
