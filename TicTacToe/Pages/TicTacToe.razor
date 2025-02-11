@@ -1,0 +1,41 @@
+﻿@page "/"
+@page "/tictactoe"
+
+<PageTitle>TicTacToe</PageTitle>
+
+<h3>TicTacToe</h3>
+
+@code {
+    Code.GameBoard board = new Code.GameBoard();
+}
+
+<div class="tictactoe-board">
+    @for (int col = 0; col < 3; col++)
+    {
+        <div class="tictactoe-column">
+            @for (int row = 0; row < 3; row++)
+            {
+                int savedCol = col;
+                int savedRow = row;
+                <div class="tictactoe-gamepiece
+                         tictactoe-@board.Board[col,row].Style.ToString().ToLower()" @onclick="@(() => board.PieceClicked(savedCol,savedRow))"
+                     style="@(board.IsGamePieceAWinningPiece(col, row) ? "opacity: 0.4" : "")"></div>
+            }
+        </div>
+    }
+</div>
+
+
+@if (!board.GameComplete)
+{
+    <h2>@board.CurrentStyle's Turn!</h2>
+}
+else
+{
+    <h2>
+        @board.GetGameCompleteMessage()
+        <button class="btn btn-success" @onclick="@(() => board.Reset())">
+            Reset
+        </button>
+    </h2>
+}
