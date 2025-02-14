@@ -16,11 +16,11 @@ public class GameBoard
         Reset();
     }
 
-    public void PieceClicked(int col, int row)
+    public void PieceClicked(int row, int col)
     {
         if (GameComplete) { return; }
 
-        GamePiece clickedSpace = Board[col, row];
+        GamePiece clickedSpace = Board[row, col];
 
         if (clickedSpace.Style == PieceStyle.Blank)
         {
@@ -39,10 +39,10 @@ public class GameBoard
         return winningPlay != null ? $"{winningPlay.WinningStyle} Wins!" : "It's a Draw!";
     }
 
-    public bool IsGamePieceAWinningPiece(int col, int row)
+    public bool IsGamePieceAWinningPiece(int row, int col)
     {
         var winningPlay = GetWinner();
-        return winningPlay?.WinningMoves?.Contains($"{col},{row}") ?? false;
+        return winningPlay?.WinningMoves?.Contains($"{row},{col}") ?? false;
     }
 
     private bool IsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
@@ -97,11 +97,11 @@ public class GameBoard
 
     public void Reset()
     {
-        for (int col = 0; col < 3; col++)
+        for (int row = 0; row < 3; row++)
         {
-            for (int row = 0; row < 3; row++)
+            for (int col = 0; col < 3; col++)
             {
-                Board[col, row] = new GamePiece { Style = PieceStyle.Blank };
+                Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }
         }
 
