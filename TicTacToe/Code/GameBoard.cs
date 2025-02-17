@@ -8,7 +8,7 @@ public class GameBoard
 
     public PieceStyle CurrentStyle { get; private set; } = PieceStyle.X;
 
-    public bool GameComplete => GetWinner() != null || IsADraw();
+    public bool GameComplete => GetWinner().HasValue || ItsADraw();
 
     public GameBoard()
     {
@@ -36,58 +36,58 @@ public class GameBoard
     public string GetGameCompleteMessage()
     {
         var winningPlay = GetWinner();
-        return winningPlay != null ? $"{winningPlay.WinningStyle} Wins!" : "It's a Draw!";
+        return winningPlay.HasValue ? $"{winningPlay.Value.WinningStyle} Wins!" : "It's a Draw!";
     }
 
     public bool IsGamePieceAWinningPiece(int row, int col)
     {
         var winningPlay = GetWinner();
-        return winningPlay?.WinningMoves?.Contains($"{row},{col}") ?? false;
+        return winningPlay.HasValue && winningPlay.Value.WinningMoves?.Contains($"{row},{col}") == true;
     }
 
-    private bool IsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
+    private bool ItsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
 
-    private WinningPlay? GetWinner()
+    private Maybe<WinningPlay> GetWinner()
     {
         for (int i = 0; i < 3; i++)
         {
             if (Board[i, 0].Style == CurrentStyle && Board[i, 1].Style == CurrentStyle && Board[i, 2].Style == CurrentStyle)
             {
-                return new WinningPlay
+                return Maybe<WinningPlay>.Some(new WinningPlay
                 {
                     WinningStyle = CurrentStyle,
                     WinningMoves = [$"{i},0", $"{i},1", $"{i},2"]
-                };
+                });
             }
             if (Board[0, i].Style == CurrentStyle && Board[1, i].Style == CurrentStyle && Board[2, i].Style == CurrentStyle)
             {
-                return new WinningPlay
+                return Maybe<WinningPlay>.Some(new WinningPlay
                 {
                     WinningStyle = CurrentStyle,
                     WinningMoves = [$"0,{i}", $"1,{i}", $"2,{i}"]
-                };
+                });
             }
         }
 
         if (Board[0, 0].Style == CurrentStyle && Board[1, 1].Style == CurrentStyle && Board[2, 2].Style == CurrentStyle)
         {
-            return new WinningPlay
+            return Maybe<WinningPlay>.Some(new WinningPlay
             {
                 WinningStyle = CurrentStyle,
                 WinningMoves = ["0,0", "1,1", "2,2"]
-            };
+            });
         }
 
         if (Board[0, 2].Style == CurrentStyle && Board[1, 1].Style == CurrentStyle && Board[2, 0].Style == CurrentStyle)
         {
-            return new WinningPlay
+            return Maybe<WinningPlay>.Some(new WinningPlay
             {
                 WinningStyle = CurrentStyle,
                 WinningMoves = ["0,2", "1,1", "2,0"]
-            };
+            });
         }
 
-        return null;
+        return Maybe<WinningPlay>.None;
     }
 
     private void SwitchTurns()
@@ -104,7 +104,5 @@ public class GameBoard
                 Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }
         }
-
-        CurrentStyle = PieceStyle.X;
     }
 }
