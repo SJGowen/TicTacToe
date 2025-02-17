@@ -17,14 +17,18 @@
             {
                 int savedRow = row;
                 int savedCol = col;
-                <div class="tictactoe-gamepiece
-                         tictactoe-@board.Board[row,col].Style.ToString().ToLower()" @onclick="@(() => board.PieceClicked(savedRow,savedCol))"
-                     style="@(board.IsGamePieceAWinningPiece(row, col) ? "opacity: 0.4" : "")"></div>
+                <div class="tictactoe-gamepiece" @onclick="@(() => board.PieceClicked(savedRow, savedCol))">
+                    @if (board.Board[row, col].Style != Code.PieceStyle.Blank)
+                    {
+                        <span class="tictactoe-@board.Board[row,col].Style.ToString().ToLower() @(board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
+                            @board.Board[row, col].Style
+                        </span>
+                    }
+                </div>
             }
         </div>
     }
 </div>
-
 
 @if (!board.GameComplete)
 {
