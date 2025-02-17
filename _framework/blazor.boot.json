@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "TicTacToe",
   "resources": {
-    "hash": "sha256-/OdGFlFSquhnyh+M1i/mfsvwjj/R4oM6Q5Qdo7KYONQ=",
+    "hash": "sha256-vvnx10gACvwgO81NcOxAgtztVn3KgG9nbuvaKvSnQoc=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.py7zoml2z4.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.pq1s9tpl5w.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -31,11 +31,11 @@
       "System.Private.Uri.c2jcfw32au.wasm": "System.Private.Uri.wasm",
       "System.Runtime.InteropServices.JavaScript.2qzse51b5r.wasm": "System.Runtime.InteropServices.JavaScript.wasm",
       "System.Runtime.InteropServices.ebl1t4cqsb.wasm": "System.Runtime.InteropServices.wasm",
-      "System.Runtime.7o2wml2cp6.wasm": "System.Runtime.wasm",
+      "System.Runtime.qx89w73ouq.wasm": "System.Runtime.wasm",
       "System.Text.Encodings.Web.4zpcd8unrt.wasm": "System.Text.Encodings.Web.wasm",
       "System.Text.Json.8iu0dnianz.wasm": "System.Text.Json.wasm",
       "System.Text.RegularExpressions.0e9rlv7vxy.wasm": "System.Text.RegularExpressions.wasm",
-      "TicTacToe.3xio23673k.wasm": "TicTacToe.wasm",
+      "TicTacToe.b83pffe0yx.wasm": "TicTacToe.wasm",
       "dotnet.native.2ugmiy9gdc.js": "dotnet.native.js",
       "dotnet.native.7liackjrtp.wasm": "dotnet.native.wasm",
       "dotnet.js": "dotnet.js",
@@ -89,11 +89,11 @@
       "System.Net.Primitives.64ga4lbdmv.wasm": "sha256-6qfRgKqAwwmWzGgvzRHh01AJ7x6iBsgex62EJYI/owY=",
       "System.Private.Uri.c2jcfw32au.wasm": "sha256-fHX2Uqbzsrv4/T0hzgKHa7TiPN1l10upJlaubkfAfIU=",
       "System.Runtime.InteropServices.ebl1t4cqsb.wasm": "sha256-Ki9CIBGK1PxgT1lINYYrJXvIS+uhcVV7Po4GxFvD5SM=",
-      "System.Runtime.7o2wml2cp6.wasm": "sha256-hz8kQImE1+JbXckCtYjoXxQSnQT03jVVeUH7tcmYVms=",
+      "System.Runtime.qx89w73ouq.wasm": "sha256-fmHuo7LSvmoFjp0QUVZip87OhrEY6kv+GmaAR3q3JDM=",
       "System.Text.Encodings.Web.4zpcd8unrt.wasm": "sha256-gAQK1aO5MWD0GwIAc812qHpnec5wlHwgnyaZ9RGOUOg=",
       "System.Text.Json.8iu0dnianz.wasm": "sha256-kNyMEodCkFLZWxbFozOTg+amSda8YN6Sjp9EN5xmbRA=",
       "System.Text.RegularExpressions.0e9rlv7vxy.wasm": "sha256-SKkTQL9D0Loskr+NX705/WITcRNb/8VQlQorMrz5S6M=",
-      "TicTacToe.3xio23673k.wasm": "sha256-x8NF932rn9VTQKLAxN8pCnjAb0eibPa/EANa6yD7Ntg="
+      "TicTacToe.b83pffe0yx.wasm": "sha256-m8e6Yk/sBGUAoslQpwEwwqiKFwPJYLn5ZSjPwMSEKQU="
     }
   },
   "cacheBootResources": true,
