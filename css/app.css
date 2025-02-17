@@ -140,7 +140,7 @@ code {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Caveat', cursive;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 @keyframes flash {
