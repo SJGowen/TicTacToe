@@ -5,18 +5,58 @@ namespace TicTacToe.Code;
 public class GameBoard
 {
     public GamePiece[,] Board { get; private set; }
-
     public PieceStyle CurrentStyle { get; private set; } = PieceStyle.X;
-
     public bool GameComplete => GetWinner().HasValue || ItsADraw();
 
-    public GameBoard()
+    private Player _playerX;
+    private Player _playerO;
+    private bool _isFirstMove = true;
+
+    public GameBoard(PlayerType playerXType, PlayerType playerOType)
     {
         Board = new GamePiece[3, 3];
-        Reset();
+
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 3; col++)
+            {
+                Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
+            }
+        }
+
+        _playerX = CreatePlayer(playerXType, PieceStyle.X);
+        _playerO = CreatePlayer(playerOType, PieceStyle.O);
     }
 
-    public void PieceClicked(int row, int col)
+    public GameBoard Clone()
+    {
+        var clone = new GameBoard(PlayerType.Human, PlayerType.Human)
+        {
+            CurrentStyle = this.CurrentStyle
+        };
+
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 3; col++)
+            {
+                clone.Board[row, col] = new GamePiece { Style = this.Board[row, col].Style };
+            }
+        }
+
+        return clone;
+    }
+
+    private Player CreatePlayer(PlayerType playerType, PieceStyle style)
+    {
+        return playerType switch
+        {
+            PlayerType.Human => new HumanPlayer(style),
+            PlayerType.Computer => new ComputerPlayer(style),
+            _ => throw new ArgumentException("Invalid player type")
+        };
+    }
+
+    public async Task PieceClicked(int row, int col)
     {
         if (GameComplete) { return; }
 
@@ -29,6 +69,32 @@ public class GameBoard
             if (!GameComplete)
             {
                 SwitchTurns();
+            }
+        }
+    }
+
+    public async Task MakeComputerMoveIfNeededAsync()
+    {
+        var currentPlayer = CurrentStyle == PieceStyle.X ? _playerX : _playerO;
+        if (currentPlayer is ComputerPlayer)
+        {
+            int row, col;
+            if (_isFirstMove)
+            {
+                // Randomize the initial move
+                var random = new Random();
+                row = random.Next(0, 3);
+                col = random.Next(0, 3);
+                _isFirstMove = false;
+            }
+            else
+            {
+                (row, col) = currentPlayer.GetMove(this);
+            }
+
+            if (row != -1 && col != -1)
+            {
+                await PieceClicked(row, col);
             }
         }
     }
@@ -47,7 +113,7 @@ public class GameBoard
 
     private bool ItsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
 
-    private Maybe<WinningPlay> GetWinner()
+    public Maybe<WinningPlay> GetWinner()
     {
         for (int i = 0; i < 3; i++)
         {
@@ -95,7 +161,7 @@ public class GameBoard
         CurrentStyle = CurrentStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
     }
 
-    public void Reset()
+    public async Task Reset()
     {
         for (int row = 0; row < 3; row++)
         {
@@ -104,5 +170,6 @@ public class GameBoard
                 Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }
         }
+        _isFirstMove = true;
     }
 }

@@ -5,11 +5,30 @@
 
 <h3>TicTacToe</h3>
 
-@code {
-    Code.GameBoard board = new Code.GameBoard();
-}
+<div>
+    <h4>Select Player Types</h4>
+    <form>
+        <div class="mb-3">
+            <label for="playerX" class="form-label">Player X</label>
+            <select id="playerX" class="form-select" @bind="playerXType" disabled="@gameStarted">
+                <option value="Human">Human</option>
+                <option value="Computer">Computer</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="playerO" class="form-label">Player O</label>
+            <select id="playerO" class="form-select" @bind="playerOType" disabled="@gameStarted">
+                <option value="Human">Human</option>
+                <option value="Computer">Computer</option>
+            </select>
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="ToggleGame">
+            @buttonText
+        </button>
+    </form>
+</div>
 
-<div class="tictactoe-board">
+<div class="tictactoe-board @(gameStarted ? "" : "disabled")">
     @for (int row = 0; row < 3; row++)
     {
         <div class="tictactoe-column">
@@ -17,7 +36,7 @@
             {
                 int savedRow = row;
                 int savedCol = col;
-                <div class="tictactoe-gamepiece" @onclick="@(() => board.PieceClicked(savedRow, savedCol))">
+                <div class="tictactoe-gamepiece" @onclick="@(() => OnGamePieceClicked(savedRow, savedCol))">
                     @if (board.Board[row, col].Style != Code.PieceStyle.Blank)
                     {
                         <span class="tictactoe-@board.Board[row,col].Style.ToString().ToLower() @(board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
@@ -30,16 +49,82 @@
     }
 </div>
 
-@if (!board.GameComplete)
-{
-    <h2>@board.CurrentStyle's Turn!</h2>
-}
-else
-{
-    <h2>
-        @board.GetGameCompleteMessage()
-        <button class="btn btn-success" @onclick="@(() => board.Reset())">
-            Reset
-        </button>
-    </h2>
+<div class="turn-text-container">
+    @if (gameStarted && !board.GameComplete)
+    {
+        <h2 class="turn-text">@board.CurrentStyle's Turn!</h2>
+    }
+    else if (gameStarted || !string.IsNullOrEmpty(gameCompleteMessage))
+    {
+        <h2 class="turn-text">@gameCompleteMessage</h2>
+    }
+</div>
+
+@code {
+    private Code.GameBoard board = new Code.GameBoard(Code.PlayerType.Human, Code.PlayerType.Human);
+    private bool gameStarted = false;
+    private string buttonText = "Start Game";
+    private string gameCompleteMessage = string.Empty;
+    private Code.PlayerType playerXType = Code.PlayerType.Human;
+    private Code.PlayerType playerOType = Code.PlayerType.Human;
+    private CancellationTokenSource? cancellationTokenSource;
+
+    private async Task ToggleGame()
+    {
+        if (gameStarted)
+        {
+            await StopGame();
+        }
+        else
+        {
+            await StartGame();
+        }
+    }
+
+    private async Task StartGame()
+    {
+        await ResetGame();
+        gameStarted = true;
+        buttonText = "Stop Game";
+        cancellationTokenSource = new CancellationTokenSource();
+
+        while (!board.GameComplete && !cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            await board.MakeComputerMoveIfNeededAsync();
+            StateHasChanged();
+            await Task.Delay(400);
+        }
+
+        if (!cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            gameCompleteMessage = board.GetGameCompleteMessage();
+            gameStarted = false;
+            buttonText = "Start Game";
+            StateHasChanged();
+        }
+    }
+
+    private async Task StopGame()
+    {
+        cancellationTokenSource?.Cancel();
+        await ResetGame();
+    }
+
+    private async Task ResetGame()
+    {
+        board = new Code.GameBoard(playerXType, playerOType);
+        gameStarted = false;
+        buttonText = "Start Game";
+        gameCompleteMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task OnGamePieceClicked(int row, int col)
+    {
+        if (gameStarted && !board.GameComplete)
+        {
+            await board.PieceClicked(row, col);
+            StateHasChanged();
+        }
+    }
 }
