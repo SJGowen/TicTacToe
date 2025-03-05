@@ -1,5 +1,8 @@
 ﻿@page "/"
 @page "/tictactoe"
+@using global::TicTacToe.Code
+
+@inject GameState GameState
 
 <PageTitle>TicTacToe</PageTitle>
 
@@ -10,25 +13,25 @@
     <form>
         <div class="mb-3">
             <label for="playerX" class="form-label">Player X</label>
-            <select id="playerX" class="form-select" @bind="playerXType" disabled="@gameStarted">
+            <select id="playerX" class="form-select" @bind="playerXType" disabled="@GameState.GameStarted">
                 <option value="Human">Human</option>
                 <option value="Computer">Computer</option>
             </select>
         </div>
         <div class="mb-3">
             <label for="playerO" class="form-label">Player O</label>
-            <select id="playerO" class="form-select" @bind="playerOType" disabled="@gameStarted">
+            <select id="playerO" class="form-select" @bind="playerOType" disabled="@GameState.GameStarted">
                 <option value="Human">Human</option>
                 <option value="Computer">Computer</option>
             </select>
         </div>
         <button type="button" class="btn btn-primary" @onclick="ToggleGame">
-            @buttonText
+            @GameState.ButtonText
         </button>
     </form>
 </div>
 
-<div class="tictactoe-board @(gameStarted ? "" : "disabled")">
+<div class="tictactoe-board @(GameState.GameStarted ? "" : "disabled")">
     @for (int row = 0; row < 3; row++)
     {
         <div class="tictactoe-column">
@@ -37,10 +40,10 @@
                 int savedRow = row;
                 int savedCol = col;
                 <div class="tictactoe-gamepiece" @onclick="@(() => OnGamePieceClicked(savedRow, savedCol))">
-                    @if (board.Board[row, col].Style != Code.PieceStyle.Blank)
+                    @if (GameState.Board.Board[row, col].Style != Code.PieceStyle.Blank)
                     {
-                        <span class="tictactoe-@board.Board[row,col].Style.ToString().ToLower() @(board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
-                            @board.Board[row, col].Style
+                        <span class="tictactoe-@GameState.Board.Board[row,col].Style.ToString().ToLower() @(GameState.Board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
+                            @GameState.Board.Board[row, col].Style
                         </span>
                     }
                 </div>
@@ -50,28 +53,24 @@
 </div>
 
 <div class="turn-text-container">
-    @if (gameStarted && !board.GameComplete)
+    @if (GameState.GameStarted && !GameState.Board.GameComplete)
     {
-        <h2 class="turn-text">@board.CurrentStyle's Turn!</h2>
+        <h2 class="turn-text">@GameState.Board.CurrentStyle's Turn!</h2>
     }
-    else if (gameStarted || !string.IsNullOrEmpty(gameCompleteMessage))
+    else if (GameState.GameStarted || !string.IsNullOrEmpty(GameState.GameCompleteMessage))
     {
-        <h2 class="turn-text">@gameCompleteMessage</h2>
+        <h2 class="turn-text">@GameState.GameCompleteMessage</h2>
     }
 </div>
 
 @code {
-    private Code.GameBoard board = new Code.GameBoard(Code.PlayerType.Human, Code.PlayerType.Human);
-    private bool gameStarted = false;
-    private string buttonText = "Start Game";
-    private string gameCompleteMessage = string.Empty;
     private Code.PlayerType playerXType = Code.PlayerType.Human;
     private Code.PlayerType playerOType = Code.PlayerType.Human;
     private CancellationTokenSource? cancellationTokenSource;
 
     private async Task ToggleGame()
     {
-        if (gameStarted)
+        if (GameState.GameStarted)
         {
             await StopGame();
         }
@@ -83,14 +82,13 @@
 
     private async Task StartGame()
     {
-        await ResetGame();
-        gameStarted = true;
-        buttonText = "Stop Game";
+        GameState.ResetGame(playerXType, playerOType);
+        GameState.GameStarted = true;
         cancellationTokenSource = new CancellationTokenSource();
 
-        while (!board.GameComplete && !cancellationTokenSource.Token.IsCancellationRequested)
+        while (!GameState.Board.GameComplete && !cancellationTokenSource.Token.IsCancellationRequested)
         {
-            await board.MakeComputerMoveIfNeededAsync();
+            await GameState.Board.MakeComputerMoveIfNeededAsync();
             StateHasChanged();
 
             await Task.Delay(400);
@@ -98,9 +96,8 @@
 
         if (!cancellationTokenSource.Token.IsCancellationRequested)
         {
-            gameCompleteMessage = board.GetGameCompleteMessage();
-            gameStarted = false;
-            buttonText = "Start Game";
+            GameState.UpdateGameCompleteMessage();
+            GameState.GameStarted = false;
             StateHasChanged();
         }
     }
@@ -108,23 +105,14 @@
     private async Task StopGame()
     {
         cancellationTokenSource?.Cancel();
-        await ResetGame();
-    }
-
-    private async Task ResetGame()
-    {
-        board = new Code.GameBoard(playerXType, playerOType);
-        gameStarted = false;
-        buttonText = "Start Game";
-        gameCompleteMessage = string.Empty;
-        StateHasChanged();
+        GameState.ResetGame(playerXType, playerOType);
     }
 
     private async Task OnGamePieceClicked(int row, int col)
     {
-        if (gameStarted && !board.GameComplete)
+        if (GameState.GameStarted && !GameState.Board.GameComplete)
         {
-            await board.PieceClicked(row, col);
+            await GameState.Board.PieceClicked(row, col);
             StateHasChanged();
         }
     }

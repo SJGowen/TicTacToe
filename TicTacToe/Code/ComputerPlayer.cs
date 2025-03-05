@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace TicTacToe.Code
 {
     public class ComputerPlayer : Player
@@ -41,25 +37,24 @@ namespace TicTacToe.Code
 
         private Maybe<(int row, int col)> GetWinningMove(GameBoard board, PieceStyle style)
         {
-            var winningMove = (from r in Enumerable.Range(0, 3)
-                               from c in Enumerable.Range(0, 3)
-                               where board.Board[r, c].Style == PieceStyle.Blank
-                               select (r, c) into move
-                               let simulatedBoard = SimulateMove(board, move, style)
-                               let winner = simulatedBoard.GetWinner()
-                               where winner.HasValue && winner.Value.WinningStyle == style
-                               select move).FirstOrDefault();
+            foreach (var move in GetBlankMoves(board))
+            {
+                // Apply the move
+                board.Board[move.row, move.col].Style = style;
 
-            return winningMove != default
-                ? Maybe<(int row, int col)>.Some(winningMove)
-                : Maybe<(int row, int col)>.None;
-        }
+                // Check if this move results in a win
+                var winner = board.GetWinner();
 
-        private GameBoard SimulateMove(GameBoard board, (int row, int col) move, PieceStyle style)
-        {
-            var newBoard = board.Clone();
-            newBoard.Board[move.row, move.col].Style = style;
-            return newBoard;
+                // Revert the move
+                board.Board[move.row, move.col].Style = PieceStyle.Blank;
+
+                // If the move results in a win, return it
+                if (winner.HasValue && winner.Value.WinningStyle == style)
+                {
+                    return Maybe<(int row, int col)>.Some(move);
+                }
+            }
+            return Maybe<(int row, int col)>.None;
         }
 
         private Maybe<(int row, int col)> GetPotentialWinningMove(GameBoard board, PieceStyle style) =>
@@ -78,18 +73,26 @@ namespace TicTacToe.Code
 
         private int EvaluatePotentialMove(GameBoard board, (int row, int col) move, PieceStyle style)
         {
-            var newBoard = SimulateMove(board, move, style);
-            return EvaluateBoard(newBoard);
+            // Apply the move
+            board.Board[move.row, move.col].Style = style;
+
+            // Evaluate the board
+            int score = EvaluateBoard(board);
+
+            // Revert the move
+            board.Board[move.row, move.col].Style = PieceStyle.Blank;
+
+            return score;
         }
 
         private (int row, int col) GetOptimalMove(GameBoard board)
         {
             var optimalMoves = new List<(int row, int col)>
-            {
-                (1, 1), // Center
-                (0, 0), (0, 2), (2, 0), (2, 2), // Corners
-                (0, 1), (1, 0), (1, 2), (2, 1) // Edges
-            };
+                {
+                    (1, 1), // Center
+                    (0, 0), (0, 2), (2, 0), (2, 2), // Corners
+                    (0, 1), (1, 0), (1, 2), (2, 1) // Edges
+                };
 
             return optimalMoves.FirstOrDefault(move => board.Board[move.row, move.col].Style == PieceStyle.Blank);
         }
@@ -100,7 +103,16 @@ namespace TicTacToe.Code
             EvaluateLine(board.Board[0, 0], board.Board[1, 1], board.Board[2, 2]) +
             EvaluateLine(board.Board[0, 2], board.Board[1, 1], board.Board[2, 0]);
 
-        private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c) =>
-            new[] { a, b, c }.Sum(piece => piece.Style == Style ? 10 : piece.Style != PieceStyle.Blank ? -10 : 0);
+        private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c)
+        {
+            int score = 0;
+            if (a.Style == Style) score += 10;
+            if (b.Style == Style) score += 10;
+            if (c.Style == Style) score += 10;
+            if (a.Style != Style && a.Style != PieceStyle.Blank) score -= 10;
+            if (b.Style != Style && b.Style != PieceStyle.Blank) score -= 10;
+            if (c.Style != Style && c.Style != PieceStyle.Blank) score -= 10;
+            return score;
+        }
     }
 }
