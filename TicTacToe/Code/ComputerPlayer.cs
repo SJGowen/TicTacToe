@@ -16,7 +16,6 @@ namespace TicTacToe.Code
             var winningMove = GetWinningMove(board, Style);
             if (winningMove.HasValue)
             {
-                Console.WriteLine($"Computer (X) winning move: {winningMove.Value}");
                 return winningMove.Value;
             }
 
@@ -25,7 +24,6 @@ namespace TicTacToe.Code
             var blockingMove = GetWinningMove(board, opponentStyle);
             if (blockingMove.HasValue)
             {
-                Console.WriteLine($"Computer (X) blocking move: {blockingMove.Value}");
                 return blockingMove.Value;
             }
 
@@ -33,13 +31,11 @@ namespace TicTacToe.Code
             var potentialMove = GetPotentialWinningMove(board, Style);
             if (potentialMove.HasValue)
             {
-                Console.WriteLine($"Computer (X) potential move: {potentialMove.Value}");
                 return potentialMove.Value;
             }
 
             // Use optimal squares (center, corners, edges)
             var optimalMove = GetOptimalMove(board);
-            Console.WriteLine($"Computer (X) optimal move: {optimalMove}");
             return optimalMove;
         }
 
@@ -53,11 +49,6 @@ namespace TicTacToe.Code
                                let winner = simulatedBoard.GetWinner()
                                where winner.HasValue && winner.Value.WinningStyle == style
                                select move).FirstOrDefault();
-
-            if (winningMove != default)
-            {
-                Console.WriteLine($"Winning move found for {style}: {winningMove}");
-            }
 
             return winningMove != default
                 ? Maybe<(int row, int col)>.Some(winningMove)
