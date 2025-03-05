@@ -8,53 +8,43 @@ namespace TicTacToe.Code
 
         public override (int row, int col) GetMove(GameBoard board)
         {
+            var blankMoves = GetBlankMoves(board).ToList();
+
             // Check for winning move
-            var winningMove = GetWinningMove(board, Style);
-            if (winningMove.HasValue)
-            {
-                return winningMove.Value;
-            }
+            var winningMove = blankMoves.FirstOrDefault(move => IsWinningMove(board, move, Style));
+            if (winningMove != default) return winningMove;
 
             // Block opponent's winning move
             var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
-            var blockingMove = GetWinningMove(board, opponentStyle);
-            if (blockingMove.HasValue)
-            {
-                return blockingMove.Value;
-            }
+            var blockingMove = blankMoves.FirstOrDefault(move => IsWinningMove(board, move, opponentStyle));
+            if (blockingMove != default) return blockingMove;
 
             // Check for potential winning lines
             var potentialMove = GetPotentialWinningMove(board, Style);
-            if (potentialMove.HasValue)
-            {
-                return potentialMove.Value;
-            }
+            if (potentialMove.HasValue) return potentialMove.Value;
 
             // Use optimal squares (center, corners, edges)
-            var optimalMove = GetOptimalMove(board);
-            return optimalMove;
+            return GetOptimalMove(board);
         }
 
         private Maybe<(int row, int col)> GetWinningMove(GameBoard board, PieceStyle style)
         {
             foreach (var move in GetBlankMoves(board))
             {
-                // Apply the move
-                board.Board[move.row, move.col].Style = style;
-
-                // Check if this move results in a win
-                var winner = board.GetWinner();
-
-                // Revert the move
-                board.Board[move.row, move.col].Style = PieceStyle.Blank;
-
-                // If the move results in a win, return it
-                if (winner.HasValue && winner.Value.WinningStyle == style)
+                if (IsWinningMove(board, move, style))
                 {
                     return Maybe<(int row, int col)>.Some(move);
                 }
             }
             return Maybe<(int row, int col)>.None;
+        }
+
+        private bool IsWinningMove(GameBoard board, (int row, int col) move, PieceStyle style)
+        {
+            board.Board[move.row, move.col].Style = style;
+            var winner = board.GetWinner();
+            board.Board[move.row, move.col].Style = PieceStyle.Blank;
+            return winner.HasValue && winner.Value.WinningStyle == style;
         }
 
         private Maybe<(int row, int col)> GetPotentialWinningMove(GameBoard board, PieceStyle style) =>
@@ -106,12 +96,17 @@ namespace TicTacToe.Code
         private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c)
         {
             int score = 0;
-            if (a.Style == Style) score += 10;
-            if (b.Style == Style) score += 10;
-            if (c.Style == Style) score += 10;
-            if (a.Style != Style && a.Style != PieceStyle.Blank) score -= 10;
-            if (b.Style != Style && b.Style != PieceStyle.Blank) score -= 10;
-            if (c.Style != Style && c.Style != PieceStyle.Blank) score -= 10;
+            score += GetPieceScore(a);
+            score += GetPieceScore(b);
+            score += GetPieceScore(c);
             return score;
         }
+
+        private int GetPieceScore(GamePiece piece)
+        {
+            if (piece.Style == Style) return 10;
+            if (piece.Style != PieceStyle.Blank) return -10;
+            return 0;
+        }
     }
+}
