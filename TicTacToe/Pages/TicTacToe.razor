@@ -66,6 +66,10 @@
     private Code.PlayerType playerOType = Code.PlayerType.Human;
     private CancellationTokenSource? cancellationTokenSource;
 
+    public TicTacToe()
+    {
+    }
+
     private async Task ToggleGame()
     {
         if (GameState.GameStarted)
@@ -84,26 +88,33 @@
         GameState.GameStarted = true;
         cancellationTokenSource = new CancellationTokenSource();
 
-        while (!GameState.Board.GameComplete && !cancellationTokenSource.Token.IsCancellationRequested)
+        try
         {
-            await GameState.Board.MakeComputerMoveIfNeededAsync();
-            StateHasChanged();
+            while (!GameState.Board.GameComplete && !cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                await GameState.Board.MakeComputerMoveIfNeededAsync();
+                StateHasChanged();
+                await Task.Delay(400, cancellationTokenSource.Token);
+            }
 
-            await Task.Delay(400);
+            if (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                GameState.UpdateGameCompleteMessage();
+                GameState.GameStarted = false;
+                StateHasChanged();
+            }
         }
-
-        if (!cancellationTokenSource.Token.IsCancellationRequested)
+        catch (TaskCanceledException)
         {
-            GameState.UpdateGameCompleteMessage();
-            GameState.GameStarted = false;
-            StateHasChanged();
+            // Handle task cancellation if needed
         }
     }
 
-    private async Task StopGame()
+    private Task StopGame()
     {
         cancellationTokenSource?.Cancel();
         GameState.ResetGame(playerXType, playerOType);
+        return Task.CompletedTask;
     }
 
     private async Task OnGamePieceClicked(int row, int col)
