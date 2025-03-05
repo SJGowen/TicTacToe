@@ -11,11 +11,11 @@ public class GameBoard
 
     public GameBoard(PlayerType playerXType, PlayerType playerOType)
     {
-        Board = new GamePiece[3, 3];
+        Board = new GamePiece[Constants.BoardSize, Constants.BoardSize];
 
-        for (int row = 0; row < 3; row++)
+        for (int row = 0; row < Constants.BoardSize; row++)
         {
-            for (int col = 0; col < 3; col++)
+            for (int col = 0; col < Constants.BoardSize; col++)
             {
                 Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }
@@ -32,9 +32,9 @@ public class GameBoard
             CurrentStyle = this.CurrentStyle
         };
 
-        for (int row = 0; row < 3; row++)
+        for (int row = 0; row < Constants.BoardSize; row++)
         {
-            for (int col = 0; col < 3; col++)
+            for (int col = 0; col < Constants.BoardSize; col++)
             {
                 clone.Board[row, col] = new GamePiece { Style = this.Board[row, col].Style };
             }
@@ -104,7 +104,7 @@ public class GameBoard
     public Maybe<WinningPlay> GetWinner()
     {
         // Check rows and columns
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < Constants.BoardSize; i++)
         {
             if (Board[i, 0].Style != PieceStyle.Blank && Board[i, 0].Style == Board[i, 1].Style && Board[i, 1].Style == Board[i, 2].Style)
             {
@@ -152,9 +152,9 @@ public class GameBoard
 
     public async Task Reset()
     {
-        for (int row = 0; row < 3; row++)
+        for (int row = 0; row < Constants.BoardSize; row++)
         {
-            for (int col = 0; col < 3; col++)
+            for (int col = 0; col < Constants.BoardSize; col++)
             {
                 Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }

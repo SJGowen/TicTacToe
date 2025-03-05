@@ -66,8 +66,8 @@ namespace TicTacToe.Code
                 : Maybe<(int row, int col)>.None;
 
         private IEnumerable<(int row, int col)> GetBlankMoves(GameBoard board) =>
-            from row in Enumerable.Range(0, 3)
-            from col in Enumerable.Range(0, 3)
+            from row in Enumerable.Range(0, Constants.BoardSize)
+            from col in Enumerable.Range(0, Constants.BoardSize)
             where board.Board[row, col].Style == PieceStyle.Blank
             select (row, col);
 
@@ -98,8 +98,8 @@ namespace TicTacToe.Code
         }
 
         private int EvaluateBoard(GameBoard board) =>
-            Enumerable.Range(0, 3).Sum(row => EvaluateLine(board.Board[row, 0], board.Board[row, 1], board.Board[row, 2])) +
-            Enumerable.Range(0, 3).Sum(col => EvaluateLine(board.Board[0, col], board.Board[1, col], board.Board[2, col])) +
+            Enumerable.Range(0, Constants.BoardSize).Sum(row => EvaluateLine(board.Board[row, 0], board.Board[row, 1], board.Board[row, 2])) +
+            Enumerable.Range(0, Constants.BoardSize).Sum(col => EvaluateLine(board.Board[0, col], board.Board[1, col], board.Board[2, col])) +
             EvaluateLine(board.Board[0, 0], board.Board[1, 1], board.Board[2, 2]) +
             EvaluateLine(board.Board[0, 2], board.Board[1, 1], board.Board[2, 0]);
 
@@ -115,4 +115,3 @@ namespace TicTacToe.Code
             return score;
         }
     }
-}

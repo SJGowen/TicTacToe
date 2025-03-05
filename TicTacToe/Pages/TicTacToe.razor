@@ -6,8 +6,6 @@
 
 <PageTitle>TicTacToe</PageTitle>
 
-<h3>TicTacToe</h3>
-
 <div>
     <h4>Select Player Types</h4>
     <form>
@@ -32,10 +30,10 @@
 </div>
 
 <div class="tictactoe-board @(GameState.GameStarted ? "" : "disabled")">
-    @for (int row = 0; row < 3; row++)
+    @for (int row = 0; row < Constants.BoardSize; row++)
     {
         <div class="tictactoe-column">
-            @for (int col = 0; col < 3; col++)
+            @for (int col = 0; col < Constants.BoardSize; col++)
             {
                 int savedRow = row;
                 int savedCol = col;
