@@ -27,18 +27,6 @@ namespace TicTacToe.Code
             return GetOptimalMove(board);
         }
 
-        private Maybe<(int row, int col)> GetWinningMove(GameBoard board, PieceStyle style)
-        {
-            foreach (var move in GetBlankMoves(board))
-            {
-                if (IsWinningMove(board, move, style))
-                {
-                    return Maybe<(int row, int col)>.Some(move);
-                }
-            }
-            return Maybe<(int row, int col)>.None;
-        }
-
         private bool IsWinningMove(GameBoard board, (int row, int col) move, PieceStyle style)
         {
             board.Board[move.row, move.col].Style = style;
