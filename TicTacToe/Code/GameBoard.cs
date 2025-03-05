@@ -25,24 +25,6 @@ public class GameBoard
         _playerO = CreatePlayer(playerOType, PieceStyle.O);
     }
 
-    public GameBoard Clone()
-    {
-        var clone = new GameBoard(PlayerType.Human, PlayerType.Human)
-        {
-            CurrentStyle = this.CurrentStyle
-        };
-
-        for (int row = 0; row < Constants.BoardSize; row++)
-        {
-            for (int col = 0; col < Constants.BoardSize; col++)
-            {
-                clone.Board[row, col] = new GamePiece { Style = this.Board[row, col].Style };
-            }
-        }
-
-        return clone;
-    }
-
     private Player CreatePlayer(PlayerType playerType, PieceStyle style)
     {
         return playerType switch
@@ -85,12 +67,6 @@ public class GameBoard
                 await PieceClicked(row, col);
             }
         }
-    }
-
-    public string GetGameCompleteMessage()
-    {
-        var winningPlay = GetWinner();
-        return winningPlay.HasValue ? $"{winningPlay.Value.WinningStyle} Wins!" : "It's a Draw!";
     }
 
     public bool IsGamePieceAWinningPiece(int row, int col)
@@ -148,18 +124,5 @@ public class GameBoard
     private void SwitchTurns()
     {
         CurrentStyle = CurrentStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
-    }
-
-    public async Task Reset()
-    {
-        for (int row = 0; row < Constants.BoardSize; row++)
-        {
-            for (int col = 0; col < Constants.BoardSize; col++)
-            {
-                Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
-            }
-        }
-
-        await Task.CompletedTask;
     }
 }
