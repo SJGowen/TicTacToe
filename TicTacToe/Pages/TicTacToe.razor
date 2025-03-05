@@ -66,6 +66,11 @@
     private Code.PlayerType playerOType = Code.PlayerType.Human;
     private CancellationTokenSource? cancellationTokenSource;
 
+    public TicTacToe()
+    {
+        // Empty constructor required for WebAssembly
+    }
+
     private async Task ToggleGame()
     {
         if (GameState.GameStarted)

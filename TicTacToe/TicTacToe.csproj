@@ -4,8 +4,6 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<BlazorWebAssemblyEnableAOT>true</BlazorWebAssemblyEnableAOT>
-		<PublishTrimmed>true</PublishTrimmed>
-		<TrimMode>link</TrimMode>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
