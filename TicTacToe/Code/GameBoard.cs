@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace TicTacToe.Code;
+﻿namespace TicTacToe.Code;
 
 public class GameBoard
 {
