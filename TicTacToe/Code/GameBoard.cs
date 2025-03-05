@@ -10,7 +10,6 @@ public class GameBoard
 
     private Player _playerX;
     private Player _playerO;
-    private bool _isFirstMove = true;
 
     public GameBoard(PlayerType playerXType, PlayerType playerOType)
     {
@@ -71,6 +70,8 @@ public class GameBoard
                 SwitchTurns();
             }
         }
+
+        await Task.CompletedTask;
     }
 
     public async Task MakeComputerMoveIfNeededAsync()
@@ -79,18 +80,7 @@ public class GameBoard
         if (currentPlayer is ComputerPlayer)
         {
             int row, col;
-            if (_isFirstMove)
-            {
-                // Randomize the initial move
-                var random = new Random();
-                row = random.Next(0, 3);
-                col = random.Next(0, 3);
-                _isFirstMove = false;
-            }
-            else
-            {
-                (row, col) = currentPlayer.GetMove(this);
-            }
+            (row, col) = currentPlayer.GetMove(this);
 
             if (row != -1 && col != -1)
             {
@@ -115,40 +105,41 @@ public class GameBoard
 
     public Maybe<WinningPlay> GetWinner()
     {
+        // Check rows and columns
         for (int i = 0; i < 3; i++)
         {
-            if (Board[i, 0].Style == CurrentStyle && Board[i, 1].Style == CurrentStyle && Board[i, 2].Style == CurrentStyle)
+            if (Board[i, 0].Style != PieceStyle.Blank && Board[i, 0].Style == Board[i, 1].Style && Board[i, 1].Style == Board[i, 2].Style)
             {
                 return Maybe<WinningPlay>.Some(new WinningPlay
                 {
-                    WinningStyle = CurrentStyle,
+                    WinningStyle = Board[i, 0].Style,
                     WinningMoves = [$"{i},0", $"{i},1", $"{i},2"]
                 });
             }
-            if (Board[0, i].Style == CurrentStyle && Board[1, i].Style == CurrentStyle && Board[2, i].Style == CurrentStyle)
+            if (Board[0, i].Style != PieceStyle.Blank && Board[0, i].Style == Board[1, i].Style && Board[1, i].Style == Board[2, i].Style)
             {
                 return Maybe<WinningPlay>.Some(new WinningPlay
                 {
-                    WinningStyle = CurrentStyle,
+                    WinningStyle = Board[0, i].Style,
                     WinningMoves = [$"0,{i}", $"1,{i}", $"2,{i}"]
                 });
             }
         }
 
-        if (Board[0, 0].Style == CurrentStyle && Board[1, 1].Style == CurrentStyle && Board[2, 2].Style == CurrentStyle)
+        // Check diagonals
+        if (Board[0, 0].Style != PieceStyle.Blank && Board[0, 0].Style == Board[1, 1].Style && Board[1, 1].Style == Board[2, 2].Style)
         {
             return Maybe<WinningPlay>.Some(new WinningPlay
             {
-                WinningStyle = CurrentStyle,
+                WinningStyle = Board[0, 0].Style,
                 WinningMoves = ["0,0", "1,1", "2,2"]
             });
         }
-
-        if (Board[0, 2].Style == CurrentStyle && Board[1, 1].Style == CurrentStyle && Board[2, 0].Style == CurrentStyle)
+        if (Board[0, 2].Style != PieceStyle.Blank && Board[0, 2].Style == Board[1, 1].Style && Board[1, 1].Style == Board[2, 0].Style)
         {
             return Maybe<WinningPlay>.Some(new WinningPlay
             {
-                WinningStyle = CurrentStyle,
+                WinningStyle = Board[0, 2].Style,
                 WinningMoves = ["0,2", "1,1", "2,0"]
             });
         }
@@ -170,6 +161,7 @@ public class GameBoard
                 Board[row, col] = new GamePiece { Style = PieceStyle.Blank };
             }
         }
-        _isFirstMove = true;
+
+        await Task.CompletedTask;
     }
 }

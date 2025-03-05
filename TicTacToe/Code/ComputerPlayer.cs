@@ -1,125 +1,115 @@
-namespace TicTacToe.Code;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-public class ComputerPlayer : Player
+namespace TicTacToe.Code
 {
-    private const int MaxDepth = 10;
-
-    public ComputerPlayer(PieceStyle style) : base(style) { }
-
-    public override (int row, int col) GetMove(GameBoard board)
+    public class ComputerPlayer : Player
     {
-        return MiniMax(board, Style, int.MinValue, int.MaxValue, 0).Move;
-    }
-
-    private (int Score, (int row, int col) Move) MiniMax(GameBoard board, PieceStyle currentStyle, int alpha, int beta, int depth)
-    {
-        // Check if the game is complete and return the score
-        if (board.GameComplete)
+        public ComputerPlayer(PieceStyle style) : base(style)
         {
-            var winner = board.GetWinner();
-            if (winner.HasValue)
+        }
+
+        public override (int row, int col) GetMove(GameBoard board)
+        {
+            // Check for winning move
+            var winningMove = GetWinningMove(board, Style);
+            if (winningMove.HasValue)
             {
-                if (winner.Value.WinningStyle == Style)
-                    return (1000 - depth, (-1, -1)); // Win
-                else
-                    return (-1000 + depth, (-1, -1)); // Loss
+                Console.WriteLine($"Computer (X) winning move: {winningMove.Value}");
+                return winningMove.Value;
             }
-            else
+
+            // Block opponent's winning move
+            var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
+            var blockingMove = GetWinningMove(board, opponentStyle);
+            if (blockingMove.HasValue)
             {
-                return (0, (-1, -1)); // Draw
+                Console.WriteLine($"Computer (X) blocking move: {blockingMove.Value}");
+                return blockingMove.Value;
             }
-        }
 
-        // Limit the depth of the search
-        if (depth >= MaxDepth)
-        {
-            return (EvaluateBoard(board), (-1, -1));
-        }
-
-        var bestScore = currentStyle == Style ? int.MinValue : int.MaxValue;
-        var bestMove = (-1, -1);
-
-        for (int row = 0; row < 3; row++)
-        {
-            for (int col = 0; col < 3; col++)
+            // Check for potential winning lines
+            var potentialMove = GetPotentialWinningMove(board, Style);
+            if (potentialMove.HasValue)
             {
-                if (board.Board[row, col].Style == PieceStyle.Blank)
-                {
-                    // Create a copy of the board and make the move
-                    var newBoard = board.Clone();
-                    newBoard.Board[row, col].Style = currentStyle;
-
-                    // Recursively call MiniMax with alpha-beta pruning
-                    var score = MiniMax(newBoard, currentStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X, alpha, beta, depth + 1).Score;
-
-                    // Update the best score and move
-                    if (currentStyle == Style)
-                    {
-                        if (score > bestScore)
-                        {
-                            bestScore = score;
-                            bestMove = (row, col);
-                        }
-                        alpha = Math.Max(alpha, bestScore);
-                    }
-                    else
-                    {
-                        if (score < bestScore)
-                        {
-                            bestScore = score;
-                            bestMove = (row, col);
-                        }
-                        beta = Math.Min(beta, bestScore);
-                    }
-
-                    // Alpha-beta pruning
-                    if (beta <= alpha)
-                    {
-                        break;
-                    }
-                }
+                Console.WriteLine($"Computer (X) potential move: {potentialMove.Value}");
+                return potentialMove.Value;
             }
+
+            // Use optimal squares (center, corners, edges)
+            var optimalMove = GetOptimalMove(board);
+            Console.WriteLine($"Computer (X) optimal move: {optimalMove}");
+            return optimalMove;
         }
 
-        return (bestScore, bestMove);
-    }
-
-    private int EvaluateBoard(GameBoard board)
-    {
-        int score = 0;
-
-        // Evaluate rows
-        for (int row = 0; row < 3; row++)
+        private Maybe<(int row, int col)> GetWinningMove(GameBoard board, PieceStyle style)
         {
-            score += EvaluateLine(board.Board[row, 0], board.Board[row, 1], board.Board[row, 2]);
+            var winningMove = (from r in Enumerable.Range(0, 3)
+                               from c in Enumerable.Range(0, 3)
+                               where board.Board[r, c].Style == PieceStyle.Blank
+                               select (r, c) into move
+                               let simulatedBoard = SimulateMove(board, move, style)
+                               let winner = simulatedBoard.GetWinner()
+                               where winner.HasValue && winner.Value.WinningStyle == style
+                               select move).FirstOrDefault();
+
+            if (winningMove != default)
+            {
+                Console.WriteLine($"Winning move found for {style}: {winningMove}");
+            }
+
+            return winningMove != default
+                ? Maybe<(int row, int col)>.Some(winningMove)
+                : Maybe<(int row, int col)>.None;
         }
 
-        // Evaluate columns
-        for (int col = 0; col < 3; col++)
+        private GameBoard SimulateMove(GameBoard board, (int row, int col) move, PieceStyle style)
         {
-            score += EvaluateLine(board.Board[0, col], board.Board[1, col], board.Board[2, col]);
+            var newBoard = board.Clone();
+            newBoard.Board[move.row, move.col].Style = style;
+            return newBoard;
         }
 
-        // Evaluate diagonals
-        score += EvaluateLine(board.Board[0, 0], board.Board[1, 1], board.Board[2, 2]);
-        score += EvaluateLine(board.Board[0, 2], board.Board[1, 1], board.Board[2, 0]);
+        private Maybe<(int row, int col)> GetPotentialWinningMove(GameBoard board, PieceStyle style) =>
+            (from move in GetBlankMoves(board)
+             let score = EvaluatePotentialMove(board, move, style)
+             orderby score descending
+             select move).FirstOrDefault() is (int row, int col) potentialMove
+                ? Maybe<(int row, int col)>.Some(potentialMove)
+                : Maybe<(int row, int col)>.None;
 
-        return score;
-    }
+        private IEnumerable<(int row, int col)> GetBlankMoves(GameBoard board) =>
+            from row in Enumerable.Range(0, 3)
+            from col in Enumerable.Range(0, 3)
+            where board.Board[row, col].Style == PieceStyle.Blank
+            select (row, col);
 
-    private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c)
-    {
-        int score = 0;
+        private int EvaluatePotentialMove(GameBoard board, (int row, int col) move, PieceStyle style)
+        {
+            var newBoard = SimulateMove(board, move, style);
+            return EvaluateBoard(newBoard);
+        }
 
-        // Evaluate the line based on the number of Xs and Os
-        if (a.Style == Style) score += 10;
-        if (b.Style == Style) score += 10;
-        if (c.Style == Style) score += 10;
+        private (int row, int col) GetOptimalMove(GameBoard board)
+        {
+            var optimalMoves = new List<(int row, int col)>
+            {
+                (1, 1), // Center
+                (0, 0), (0, 2), (2, 0), (2, 2), // Corners
+                (0, 1), (1, 0), (1, 2), (2, 1) // Edges
+            };
 
-        if (a.Style != Style && a.Style != PieceStyle.Blank) score -= 10;
-        if (b.Style != Style && b.Style != PieceStyle.Blank) score -= 10;
-        if (c.Style != Style && c.Style != PieceStyle.Blank) score -= 10;
+            return optimalMoves.FirstOrDefault(move => board.Board[move.row, move.col].Style == PieceStyle.Blank);
+        }
 
-        return score;
+        private int EvaluateBoard(GameBoard board) =>
+            Enumerable.Range(0, 3).Sum(row => EvaluateLine(board.Board[row, 0], board.Board[row, 1], board.Board[row, 2])) +
+            Enumerable.Range(0, 3).Sum(col => EvaluateLine(board.Board[0, col], board.Board[1, col], board.Board[2, col])) +
+            EvaluateLine(board.Board[0, 0], board.Board[1, 1], board.Board[2, 2]) +
+            EvaluateLine(board.Board[0, 2], board.Board[1, 1], board.Board[2, 0]);
+
+        private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c) =>
+            new[] { a, b, c }.Sum(piece => piece.Style == Style ? 10 : piece.Style != PieceStyle.Blank ? -10 : 0);
     }
 }
