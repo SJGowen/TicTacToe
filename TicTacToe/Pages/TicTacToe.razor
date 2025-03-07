@@ -122,7 +122,7 @@
     {
         if (GameState.GameStarted && !GameState.Board.GameComplete)
         {
-            await GameState.Board.PieceClicked(row, col);
+            await GameState.Board.PieceClicked(new Position(row, col));
             StateHasChanged();
         }
     }

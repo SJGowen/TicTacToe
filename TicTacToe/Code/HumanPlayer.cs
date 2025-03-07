@@ -1,12 +1,10 @@
 namespace TicTacToe.Code;
 
-public class HumanPlayer : Player
+public class HumanPlayer(PieceStyle style) : Player(style)
 {
-    public HumanPlayer(PieceStyle style) : base(style) { }
-
-    public override (int row, int col) GetMove(GameBoard board)
+    public override Maybe<Position> GetMove(GameBoard board)
     {
-        // Human move logic will be handled by UI, so return (-1, -1) as a placeholder
-        return (-1, -1);
+        // Implementation depends on your UI interaction
+        return Maybe<Position>.None;
     }
 }

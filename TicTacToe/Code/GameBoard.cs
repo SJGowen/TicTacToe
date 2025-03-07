@@ -2,15 +2,18 @@
 
 public class GameBoard
 {
+    private readonly ILogger<ComputerPlayer> _logger;
     public GamePiece[,] Board { get; private set; }
     public PieceStyle CurrentStyle { get; private set; } = PieceStyle.X;
     public bool GameComplete => GetWinner().HasValue || ItsADraw();
-
+    
     private Player _playerX;
     private Player _playerO;
+    private Player CurrentPlayer => CurrentStyle == PieceStyle.X ? _playerX : _playerO;
 
-    public GameBoard(PlayerType playerXType, PlayerType playerOType)
+    public GameBoard(PlayerType playerXType, PlayerType playerOType, ILogger<ComputerPlayer> logger)
     {
+        _logger = logger;
         Board = new GamePiece[Constants.BoardSize, Constants.BoardSize];
 
         for (int row = 0; row < Constants.BoardSize; row++)
@@ -30,41 +33,50 @@ public class GameBoard
         return playerType switch
         {
             PlayerType.Human => new HumanPlayer(style),
-            PlayerType.Computer => new ComputerPlayer(style),
+            PlayerType.Computer => new ComputerPlayer(style, _logger),
             _ => throw new ArgumentException("Invalid player type")
         };
     }
 
-    public async Task PieceClicked(int row, int col)
+    public GameBoard Clone()
     {
-        if (GameComplete) { return; }
-
-        GamePiece clickedSpace = Board[row, col];
-
-        if (clickedSpace.Style == PieceStyle.Blank)
+        var clone = new GameBoard(PlayerType.Human, PlayerType.Human, _logger)
         {
-            clickedSpace.Style = CurrentStyle;
+            CurrentStyle = this.CurrentStyle
+        };
 
-            if (!GameComplete)
+        for (int row = 0; row < Constants.BoardSize; row++)
+        {
+            for (int col = 0; col < Constants.BoardSize; col++)
             {
-                SwitchTurns();
+                clone.Board[row, col] = new GamePiece { Style = this.Board[row, col].Style };
             }
         }
 
-        await Task.CompletedTask;
+        return clone;
+    }
+
+    public async Task PieceClicked(Position position)
+    {
+        if (GameComplete || Board[position.Row, position.Col].Style != PieceStyle.Blank)
+            return;
+
+        await Task.Run(() =>
+        {
+            Board[position.Row, position.Col].Style = CurrentPlayer.Style;
+            SwitchPlayers();
+        });
     }
 
     public async Task MakeComputerMoveIfNeededAsync()
     {
-        var currentPlayer = CurrentStyle == PieceStyle.X ? _playerX : _playerO;
-        if (currentPlayer is ComputerPlayer)
+        if (CurrentPlayer is ComputerPlayer computerPlayer)
         {
-            int row, col;
-            (row, col) = currentPlayer.GetMove(this);
-
-            if (row != -1 && col != -1)
+            var move = await Task.Run(() => computerPlayer.GetMove(this));
+            if (move.HasValue)
             {
-                await PieceClicked(row, col);
+                Board[move.Value.Row, move.Value.Col].Style = computerPlayer.Style;
+                SwitchPlayers();
             }
         }
     }
@@ -121,7 +133,7 @@ public class GameBoard
         return Maybe<WinningPlay>.None;
     }
 
-    private void SwitchTurns()
+    private void SwitchPlayers()
     {
         CurrentStyle = CurrentStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
     }

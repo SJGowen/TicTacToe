@@ -18,6 +18,12 @@ namespace TicTacToe
             builder.Services.AddScoped<LazyAssemblyLoader>();
             builder.Services.AddScoped<GameState>();
 
+            // Configure logging
+            builder.Logging.SetMinimumLevel(LogLevel.Error);  // Set global minimum level
+            builder.Logging.AddFilter("Microsoft", LogLevel.Error);
+            builder.Logging.AddFilter("System", LogLevel.Error);
+            builder.Logging.AddFilter("TicTacToe", LogLevel.Error);
+
             await builder.Build().RunAsync();
         }
     }

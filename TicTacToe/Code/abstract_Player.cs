@@ -9,5 +9,5 @@ public abstract class Player
         Style = style;
     }
 
-    public abstract (int row, int col) GetMove(GameBoard board);
+    public abstract Maybe<Position> GetMove(GameBoard board);
 }

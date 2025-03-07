@@ -1,100 +1,144 @@
-namespace TicTacToe.Code
-{
-    public class ComputerPlayer : Player
-    {
-        public ComputerPlayer(PieceStyle style) : base(style)
-        {
-        }
+namespace TicTacToe.Code;
 
-        public override (int row, int col) GetMove(GameBoard board)
+public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = null) : Player(style)
+{
+    private static readonly Position Center = new(1, 1);
+    private static readonly Position[] Corners = [new(0, 0), new(0, 2), new(2, 0), new(2, 2)];
+    private static readonly Position[] Edges = [new(0, 1), new(1, 0), new(1, 2), new(2, 1)];
+
+    public override Maybe<Position> GetMove(GameBoard board)
+    {
+        ArgumentNullException.ThrowIfNull(board);
+
+        try
         {
             var blankMoves = GetBlankMoves(board).ToList();
-
+            logger?.LogDebug("Available moves: {Count}", blankMoves.Count);
+    
+            // If there are no moves available, return None
+            if (blankMoves.Count == 0) 
+            {
+                logger?.LogInformation("No moves available");
+                return Maybe<Position>.None;
+            }
+    
             // Check for winning move
-            var winningMove = blankMoves.FirstOrDefault(move => IsWinningMove(board, move, Style));
-            if (winningMove != default) return winningMove;
-
+            var winningMove = FindWinningMove(board, blankMoves, Style);
+            if (winningMove.HasValue) 
+            {
+                logger?.LogInformation("Found winning move at position ({Row}, {Col})", 
+                    winningMove.Value.Row, winningMove.Value.Col);
+                return winningMove;
+            }
+    
             // Block opponent's winning move
             var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
-            var blockingMove = blankMoves.FirstOrDefault(move => IsWinningMove(board, move, opponentStyle));
-            if (blockingMove != default) return blockingMove;
-
-            // Check for potential winning lines
-            var potentialMove = GetPotentialWinningMove(board, Style);
-            if (potentialMove.HasValue) return potentialMove.Value;
-
-            // Use optimal squares (center, corners, edges)
-            return GetOptimalMove(board);
+            var blockingMove = FindWinningMove(board, blankMoves, opponentStyle);
+            if (blockingMove.HasValue) 
+            {
+                logger?.LogInformation("Found blocking move at position ({Row}, {Col})", 
+                    blockingMove.Value.Row, blockingMove.Value.Col);
+                return blockingMove;
+            }
+    
+            var optimalMove = GetOptimalMove(board, blankMoves);
+            logger?.LogInformation("Selected optimal move at position ({Row}, {Col})", 
+                optimalMove.Value.Row, optimalMove.Value.Col);
+            return optimalMove;
+    
         }
-
-        private bool IsWinningMove(GameBoard board, (int row, int col) move, PieceStyle style)
+        catch (Exception ex)
         {
-            board.Board[move.row, move.col].Style = style;
-            var winner = board.GetWinner();
-            board.Board[move.row, move.col].Style = PieceStyle.Blank;
-            return winner.HasValue && winner.Value.WinningStyle == style;
-        }
-
-        private Maybe<(int row, int col)> GetPotentialWinningMove(GameBoard board, PieceStyle style) =>
-            (from move in GetBlankMoves(board)
-             let score = EvaluatePotentialMove(board, move, style)
-             orderby score descending
-             select move).FirstOrDefault() is (int row, int col) potentialMove
-                ? Maybe<(int row, int col)>.Some(potentialMove)
-                : Maybe<(int row, int col)>.None;
-
-        private IEnumerable<(int row, int col)> GetBlankMoves(GameBoard board) =>
-            from row in Enumerable.Range(0, Constants.BoardSize)
-            from col in Enumerable.Range(0, Constants.BoardSize)
-            where board.Board[row, col].Style == PieceStyle.Blank
-            select (row, col);
-
-        private int EvaluatePotentialMove(GameBoard board, (int row, int col) move, PieceStyle style)
-        {
-            // Apply the move
-            board.Board[move.row, move.col].Style = style;
-
-            // Evaluate the board
-            int score = EvaluateBoard(board);
-
-            // Revert the move
-            board.Board[move.row, move.col].Style = PieceStyle.Blank;
-
-            return score;
-        }
-
-        private (int row, int col) GetOptimalMove(GameBoard board)
-        {
-            var optimalMoves = new List<(int row, int col)>
-                {
-                    (1, 1), // Center
-                    (0, 0), (0, 2), (2, 0), (2, 2), // Corners
-                    (0, 1), (1, 0), (1, 2), (2, 1) // Edges
-                };
-
-            return optimalMoves.FirstOrDefault(move => board.Board[move.row, move.col].Style == PieceStyle.Blank);
-        }
-
-        private int EvaluateBoard(GameBoard board) =>
-            Enumerable.Range(0, Constants.BoardSize).Sum(row => EvaluateLine(board.Board[row, 0], board.Board[row, 1], board.Board[row, 2])) +
-            Enumerable.Range(0, Constants.BoardSize).Sum(col => EvaluateLine(board.Board[0, col], board.Board[1, col], board.Board[2, col])) +
-            EvaluateLine(board.Board[0, 0], board.Board[1, 1], board.Board[2, 2]) +
-            EvaluateLine(board.Board[0, 2], board.Board[1, 1], board.Board[2, 0]);
-
-        private int EvaluateLine(GamePiece a, GamePiece b, GamePiece c)
-        {
-            int score = 0;
-            score += GetPieceScore(a);
-            score += GetPieceScore(b);
-            score += GetPieceScore(c);
-            return score;
-        }
-
-        private int GetPieceScore(GamePiece piece)
-        {
-            if (piece.Style == Style) return 10;
-            if (piece.Style != PieceStyle.Blank) return -10;
-            return 0;
-        }
+            logger?.LogError(ex, "An error occurred while getting computer move");
+            throw;
+        }    
     }
+
+    private Maybe<Position> FindWinningMove(GameBoard board, List<Position> moves, PieceStyle style)
+    {
+        logger?.LogDebug("Searching for winning move for {Style}", style);
+        foreach (var move in moves)
+        {
+            if (IsWinningMove(board, move, style))
+            {
+                logger?.LogDebug("Found winning move for {Style} at position ({Row}, {Col})", 
+                    style, move.Row, move.Col);
+                return Maybe<Position>.Some(move);
+            }
+        }
+        logger?.LogDebug("No winning move found for {Style}", style);
+        return Maybe<Position>.None;
+    }
+
+    private Maybe<Position> GetOptimalMove(GameBoard board, IEnumerable<Position> moves)
+    {
+        var movesList = moves as ICollection<Position> ?? moves.ToList();
+        if (movesList.Count == 0)
+        {
+            logger?.LogDebug("No moves available for optimal move selection");
+            return Maybe<Position>.None;
+        }
+
+        if (board.Board[Center.Row, Center.Col].Style == PieceStyle.Blank)
+        {
+            logger?.LogDebug("Taking center position as optimal move");
+            return Maybe<Position>.Some(Center);
+        }
+
+        var availableCorners = Corners.Where(corner => 
+            board.Board[corner.Row, corner.Col].Style == PieceStyle.Blank).ToArray();
+        logger?.LogDebug("Available corner positions: {Count}", availableCorners.Length);
+        
+        if (availableCorners.Length > 0)
+        {
+            var randomCorner = GetRandomMove(availableCorners);
+            if (randomCorner.HasValue)
+            {
+                logger?.LogDebug("Taking corner position ({Row}, {Col}) as optimal move", 
+                    randomCorner.Value.Row, randomCorner.Value.Col);
+                return randomCorner;
+            }
+        }
+
+        var availableEdges = Edges.Where(edge => 
+            board.Board[edge.Row, edge.Col].Style == PieceStyle.Blank).ToArray();
+        logger?.LogDebug("Available edge positions: {Count}", availableEdges.Length);
+        
+        if (availableEdges.Length > 0)
+        {
+            var randomEdge = GetRandomMove(availableEdges);
+            if (randomEdge.HasValue)
+            {
+                logger?.LogDebug("Taking edge position ({Row}, {Col}) as optimal move", 
+                    randomEdge.Value.Row, randomEdge.Value.Col);
+                return randomEdge;
+            }
+        }
+
+        logger?.LogDebug("Taking first available move as optimal move");
+        return movesList.Any() 
+            ? Maybe<Position>.Some(movesList.First())
+            : Maybe<Position>.None;
+    }
+
+    private static bool IsWinningMove(GameBoard board, Position move, PieceStyle style)
+    {
+        var newBoard = board.Clone();
+        newBoard.Board[move.Row, move.Col].Style = style;
+        var winner = newBoard.GetWinner();
+        return winner.HasValue && winner.Value.WinningStyle == style;
+    }
+
+    private static Maybe<Position> GetRandomMove(Position[] squares)
+    {
+        return squares.Length > 0 
+            ? Maybe<Position>.Some(squares[Random.Shared.Next(squares.Length)])
+            : Maybe<Position>.None;
+    }
+
+    private static IEnumerable<Position> GetBlankMoves(GameBoard board) =>
+        from row in Enumerable.Range(0, Constants.BoardSize)
+        from col in Enumerable.Range(0, Constants.BoardSize)
+        where board.Board[row, col].Style == PieceStyle.Blank
+        select new Position(row, col);
 }

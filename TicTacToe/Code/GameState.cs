@@ -1,39 +1,49 @@
-namespace TicTacToe.Code
+using TicTacToe.Code;
+
+namespace TicTacToe.Code;
+
+public class GameState
 {
-    public class GameState
+    private readonly ILogger<ComputerPlayer> _logger;
+    public GameBoard Board { get; private set; }
+    public bool GameStarted { get; set; }
+    public string ButtonText => GameStarted ? "Stop Game" : "Start Game";
+    public string GameCompleteMessage { get; private set; } = string.Empty;
+    public Maybe<WinningPlay> WinningPlay { get; private set; } = Maybe<WinningPlay>.None;
+    public ComputerPlayer ComputerPlayer { get; } // Add this property
+
+    public GameState(ILogger<ComputerPlayer> logger)
     {
-        public GameBoard Board { get; private set; }
-        public bool GameStarted { get; set; }
-        public string ButtonText => GameStarted ? "Stop Game" : "Start Game";
-        public string GameCompleteMessage { get; private set; } = string.Empty;
+        _logger = logger;
+        ComputerPlayer = new ComputerPlayer(PieceStyle.O, _logger);
+        Board = new GameBoard(PlayerType.Human, PlayerType.Human, _logger);
+    }
 
-        public GameState()
-        {
-            Board = new GameBoard(PlayerType.Human, PlayerType.Human);
-        }
+    public void StartGame(PlayerType playerXType, PlayerType playerOType)
+    {
+        Board = new GameBoard(playerXType, playerOType, _logger);
+        GameStarted = true;
+        WinningPlay = Maybe<WinningPlay>.None;
+    }
 
-        public void StartGame(PlayerType playerXType, PlayerType playerOType)
-        {
-            Board = new GameBoard(playerXType, playerOType);
-            GameStarted = true;
-        }
+    public void StopGame()
+    {
+        GameStarted = false;
+    }
 
-        public void StopGame()
-        {
-            GameStarted = false;
-        }
+    public void ResetGame(PlayerType playerXType, PlayerType playerOType)
+    {
+        Board = new GameBoard(playerXType, playerOType, _logger);
+        GameStarted = false;
+        GameCompleteMessage = string.Empty;
+        WinningPlay = Maybe<WinningPlay>.None;
+    }
 
-        public void ResetGame(PlayerType playerXType, PlayerType playerOType)
-        {
-            Board = new GameBoard(playerXType, playerOType);
-            GameStarted = false;
-            GameCompleteMessage = string.Empty;
-        }
-
-        public void UpdateGameCompleteMessage()
-        {
-            var winningPlay = Board.GetWinner();
-            GameCompleteMessage = winningPlay.HasValue ? $"{winningPlay.Value.WinningStyle} Wins!" : "It's a Draw!";
-        }
+    public void UpdateGameCompleteMessage()
+    {
+        WinningPlay = Board.GetWinner();
+        GameCompleteMessage = WinningPlay.HasValue 
+            ? $"{WinningPlay.Value.WinningStyle} Wins!" 
+            : "It's a Draw!";
     }
 }
