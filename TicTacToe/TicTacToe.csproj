@@ -5,9 +5,9 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- AOT settings -->
+        <PublishTrimmed>true</PublishTrimmed>
         <RunAOTCompilation>true</RunAOTCompilation>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <PublishTrimmed>false</PublishTrimmed>
         <!-- Optional optimizations -->
         <WasmEnableSIMD>false</WasmEnableSIMD>
         <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
