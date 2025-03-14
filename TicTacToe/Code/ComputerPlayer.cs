@@ -1,11 +1,16 @@
+using System.Collections.Immutable;
+
 namespace TicTacToe.Code;
 
 public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = null) : Player(style)
 {
     private static readonly Position Center = new(1, 1);
-    private static readonly Position[] Corners = [new(0, 0), new(0, 2), new(2, 0), new(2, 2)];
-    private static readonly Position[] Edges = [new(0, 1), new(1, 0), new(1, 2), new(2, 1)];
+    private static readonly ImmutableArray<Position> Corners = [new(0, 0), new(0, 2), new(2, 0), new(2, 2)];
+    private static readonly ImmutableArray<Position> MiddleEdges = [new(0, 1), new(1, 0), new(1, 2), new(2, 1)];
 
+    /// <summary>
+    /// Gets the computer's next move based on the current board state
+    /// </summary>
     public override Maybe<Position> GetMove(GameBoard board)
     {
         ArgumentNullException.ThrowIfNull(board);
@@ -13,56 +18,48 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
         try
         {
             var blankMoves = GetBlankMoves(board).ToList();
-            logger?.LogDebug("Available moves: {Count}", blankMoves.Count);
-    
-            // If there are no moves available, return None
-            if (blankMoves.Count == 0) 
-            {
-                logger?.LogInformation("No moves available");
-                return Maybe<Position>.None;
-            }
-    
-            // Check for winning move
-            var winningMove = FindWinningMove(board, blankMoves, Style);
-            if (winningMove.HasValue) 
-            {
-                logger?.LogInformation("Found winning move at position ({Row}, {Col})", 
-                    winningMove.Value.Row, winningMove.Value.Col);
-                return winningMove;
-            }
-    
-            // Block opponent's winning move
-            var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
-            var blockingMove = FindWinningMove(board, blankMoves, opponentStyle);
-            if (blockingMove.HasValue) 
-            {
-                logger?.LogInformation("Found blocking move at position ({Row}, {Col})", 
-                    blockingMove.Value.Row, blockingMove.Value.Col);
-                return blockingMove;
-            }
-    
-            var optimalMove = GetOptimalMove(board, blankMoves);
-            logger?.LogInformation("Selected optimal move at position ({Row}, {Col})", 
-                optimalMove.Value.Row, optimalMove.Value.Col);
-            return optimalMove;
-    
+            logger?.LogDebug($"Available moves: {blankMoves.Count}");
+
+            var move = TryGetMove(board, blankMoves);
+            logger?.LogInformation($"Selected move at position ({move.Value.Row}, {move.Value.Col})");
+            return move;
         }
         catch (Exception ex)
         {
             logger?.LogError(ex, "An error occurred while getting computer move");
             throw;
-        }    
+        }
+    }
+
+    private Maybe<Position> TryGetMove(GameBoard board, List<Position> blankMoves)
+    {
+        if (blankMoves.Count == 0)
+        {
+            logger?.LogInformation("No moves available");
+            return Maybe<Position>.None;
+        }
+
+        // Try winning move
+        var winningMove = FindWinningMove(board, blankMoves, Style);
+        if (winningMove.HasValue) return winningMove;
+
+        // Try blocking move
+        var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
+        var blockingMove = FindWinningMove(board, blankMoves, opponentStyle);
+        if (blockingMove.HasValue) return blockingMove;
+
+        // Try optimal move
+        return GetOptimalMove(board, blankMoves);
     }
 
     private Maybe<Position> FindWinningMove(GameBoard board, List<Position> moves, PieceStyle style)
     {
-        logger?.LogDebug("Searching for winning move for {Style}", style);
+        logger?.LogDebug($"Searching for winning move for {style}");
         foreach (var move in moves)
         {
             if (IsWinningMove(board, move, style))
             {
-                logger?.LogDebug("Found winning move for {Style} at position ({Row}, {Col})", 
-                    style, move.Row, move.Col);
+                logger?.LogDebug($"Found winning move for {style} at position ({move.Row}, {move.Col})");
                 return Maybe<Position>.Some(move);
             }
         }
@@ -114,11 +111,11 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
         if ((board.Board[0, 0].Style == opponentStyle && board.Board[2, 2].Style == opponentStyle) ||
             (board.Board[0, 2].Style == opponentStyle && board.Board[2, 0].Style == opponentStyle))
         {
-            var randomEdge = GetRandomMove(Edges);
+            var randomEdge = GetRandomMove(MiddleEdges);
             if (randomEdge.HasValue)
             {
-                logger?.LogDebug("Taking edge position ({Row}, {Col}) to stop opponent getting three corners",
-                    randomEdge.Value.Row, randomEdge.Value.Col);
+                logger?.LogDebug($"Taking edge position ({randomEdge.Value.Row}, {randomEdge.Value.Col}) " +
+                    "to stop opponent getting three corners");
                 return randomEdge;
             }
         }
@@ -129,15 +126,14 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
     {
         var availableCorners = Corners.Where(corner =>
             board.Board[corner.Row, corner.Col].Style == PieceStyle.Blank).ToArray();
-        logger?.LogDebug("Available corner positions: {Count}", availableCorners.Length);
+        logger?.LogDebug($"Available corner positions: {availableCorners.Length}");
 
         if (availableCorners.Length > 0)
         {
-            var randomCorner = GetRandomMove(availableCorners);
+            var randomCorner = GetRandomMove([.. availableCorners]);
             if (randomCorner.HasValue)
             {
-                logger?.LogDebug("Taking corner position ({Row}, {Col}) as optimal move",
-                    randomCorner.Value.Row, randomCorner.Value.Col);
+                logger?.LogDebug($"Taking corner position ({randomCorner.Value.Row}, {randomCorner.Value.Col}) as optimal move");
                 return randomCorner;
             }
         }
@@ -146,17 +142,16 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
 
     private Maybe<Position> EdgeMove(GameBoard board)
     {
-        var availableEdges = Edges.Where(edge =>
-            board.Board[edge.Row, edge.Col].Style == PieceStyle.Blank).ToArray();
-        logger?.LogDebug("Available edge positions: {Count}", availableEdges.Length);
+        var availableEdges = MiddleEdges.Where(edge =>
+            board.Board[edge.Row, edge.Col].Style == PieceStyle.Blank);
+        logger?.LogDebug($"Available edge positions: {availableEdges.Count()}");
 
-        if (availableEdges.Length > 0)
+        if (availableEdges.Count() > 0)
         {
-            var randomEdge = GetRandomMove(availableEdges);
+            var randomEdge = GetRandomMove([.. availableEdges]);
             if (randomEdge.HasValue)
             {
-                logger?.LogDebug("Taking edge position ({Row}, {Col}) as optimal move",
-                    randomEdge.Value.Row, randomEdge.Value.Col);
+                logger?.LogDebug($"Taking edge position ({randomEdge.Value.Row}, {randomEdge.Value.Col}) as optimal move");
                 return randomEdge;
             }
         }
@@ -171,7 +166,7 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
         return winner.HasValue && winner.Value.WinningStyle == style;
     }
 
-    private static Maybe<Position> GetRandomMove(Position[] squares)
+    private static Maybe<Position> GetRandomMove(ImmutableArray<Position> squares)
     {
         return squares.Length > 0 
             ? Maybe<Position>.Some(squares[Random.Shared.Next(squares.Length)])
