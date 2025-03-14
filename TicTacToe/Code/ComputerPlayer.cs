@@ -79,31 +79,54 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
             return Maybe<Position>.None;
         }
 
+        // Try each strategy in order
+        var move = CenterMove(board);
+        if (move.HasValue) return move;
+
+        move = BlockThreeCorners(board, movesList);
+        if (move.HasValue) return move;
+
+        move = CornerMove(board);
+        if (move.HasValue) return move;
+
+        move = EdgeMove(board);
+        if (move.HasValue) return move;
+
+        return Maybe<Position>.None;
+    }
+
+    private Maybe<Position> CenterMove(GameBoard board)
+    {
         if (board.Board[Center.Row, Center.Col].Style == PieceStyle.Blank)
         {
             logger?.LogDebug("Taking center position as optimal move");
             return Maybe<Position>.Some(Center);
         }
+        return Maybe<Position>.None;
+    }
 
-        if (movesList.Count == 6)
+    private Maybe<Position> BlockThreeCorners(GameBoard board, ICollection<Position> moves)
+    {
+        if (moves.Count != 6 || board.Board[Center.Row, Center.Col].Style != Style)
+            return Maybe<Position>.None;
+
+        var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
+        if ((board.Board[0, 0].Style == opponentStyle && board.Board[2, 2].Style == opponentStyle) ||
+            (board.Board[0, 2].Style == opponentStyle && board.Board[2, 0].Style == opponentStyle))
         {
-            if (board.Board[Center.Row, Center.Col].Style == Style)
+            var randomEdge = GetRandomMove(Edges);
+            if (randomEdge.HasValue)
             {
-                var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X; 
-                if ((board.Board[0, 0].Style == opponentStyle && board.Board[2, 2].Style == opponentStyle) ||
-                    (board.Board[0, 2].Style == opponentStyle && board.Board[2, 0].Style == opponentStyle))
-                {
-                    var randomEdge = GetRandomMove(Edges);
-                    if (randomEdge.HasValue)
-                    {
-                        logger?.LogDebug("Taking edge position ({Row}, {Col}) to stop opponent getting three corners",
-                            randomEdge.Value.Row, randomEdge.Value.Col);
-                        return randomEdge;
-                    }
-                }
+                logger?.LogDebug("Taking edge position ({Row}, {Col}) to stop opponent getting three corners",
+                    randomEdge.Value.Row, randomEdge.Value.Col);
+                return randomEdge;
             }
         }
+        return Maybe<Position>.None;
+    }
 
+    private Maybe<Position> CornerMove(GameBoard board)
+    {
         var availableCorners = Corners.Where(corner =>
             board.Board[corner.Row, corner.Col].Style == PieceStyle.Blank).ToArray();
         logger?.LogDebug("Available corner positions: {Count}", availableCorners.Length);
@@ -113,31 +136,31 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
             var randomCorner = GetRandomMove(availableCorners);
             if (randomCorner.HasValue)
             {
-                logger?.LogDebug("Taking corner position ({Row}, {Col}) as optimal move", 
+                logger?.LogDebug("Taking corner position ({Row}, {Col}) as optimal move",
                     randomCorner.Value.Row, randomCorner.Value.Col);
                 return randomCorner;
             }
         }
+        return Maybe<Position>.None;
+    }
 
-        var availableEdges = Edges.Where(edge => 
+    private Maybe<Position> EdgeMove(GameBoard board)
+    {
+        var availableEdges = Edges.Where(edge =>
             board.Board[edge.Row, edge.Col].Style == PieceStyle.Blank).ToArray();
         logger?.LogDebug("Available edge positions: {Count}", availableEdges.Length);
-        
+
         if (availableEdges.Length > 0)
         {
             var randomEdge = GetRandomMove(availableEdges);
             if (randomEdge.HasValue)
             {
-                logger?.LogDebug("Taking edge position ({Row}, {Col}) as optimal move", 
+                logger?.LogDebug("Taking edge position ({Row}, {Col}) as optimal move",
                     randomEdge.Value.Row, randomEdge.Value.Col);
                 return randomEdge;
             }
         }
-
-        logger?.LogDebug("Taking first available move as optimal move");
-        return movesList.Any() 
-            ? Maybe<Position>.Some(movesList.First())
-            : Maybe<Position>.None;
+        return Maybe<Position>.None;
     }
 
     private static bool IsWinningMove(GameBoard board, Position move, PieceStyle style)
