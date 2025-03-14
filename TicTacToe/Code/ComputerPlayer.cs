@@ -85,10 +85,29 @@ public class ComputerPlayer(PieceStyle style, ILogger<ComputerPlayer>? logger = 
             return Maybe<Position>.Some(Center);
         }
 
-        var availableCorners = Corners.Where(corner => 
+        if (movesList.Count == 6)
+        {
+            if (board.Board[Center.Row, Center.Col].Style == Style)
+            {
+                var opponentStyle = Style == PieceStyle.X ? PieceStyle.O : PieceStyle.X; 
+                if ((board.Board[0, 0].Style == opponentStyle && board.Board[2, 2].Style == opponentStyle) ||
+                    (board.Board[0, 2].Style == opponentStyle && board.Board[2, 0].Style == opponentStyle))
+                {
+                    var randomEdge = GetRandomMove(Edges);
+                    if (randomEdge.HasValue)
+                    {
+                        logger?.LogDebug("Taking edge position ({Row}, {Col}) to stop opponent getting three corners",
+                            randomEdge.Value.Row, randomEdge.Value.Col);
+                        return randomEdge;
+                    }
+                }
+            }
+        }
+
+        var availableCorners = Corners.Where(corner =>
             board.Board[corner.Row, corner.Col].Style == PieceStyle.Blank).ToArray();
         logger?.LogDebug("Available corner positions: {Count}", availableCorners.Length);
-        
+
         if (availableCorners.Length > 0)
         {
             var randomCorner = GetRandomMove(availableCorners);
