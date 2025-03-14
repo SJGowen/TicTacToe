@@ -49,7 +49,25 @@ public class ComputerPlayerTests
     }
 
     [Fact]
-    public void TestBlockOpponentWinningMoveWithDebugWritesOfTheGrid()
+    public void TestBlockOpponentThreeCorners()
+    {
+        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.O);
+
+        // Set up a board state where the opponent can win
+        board.Board[0, 0].Style = PieceStyle.X;
+        board.Board[1, 1].Style = PieceStyle.O;
+        board.Board[2, 2].Style = PieceStyle.X;
+
+        var moveResult = computerPlayer.GetMove(board);
+        Assert.True(moveResult.HasValue);
+        // The move is to one of the MiddleEdges
+        Assert.Contains(new Position(moveResult.Value.Row, moveResult.Value.Col),
+            new[] { new Position(0, 1), new Position(1, 0), new Position(1, 2), new Position(2, 1) });
+    }
+
+    [Fact]
+    public void TestBlockOpponentWinningMoveLogged()
     {
         var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
         var computerPlayer = new ComputerPlayer(PieceStyle.O);
