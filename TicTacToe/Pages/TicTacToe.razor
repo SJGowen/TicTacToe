@@ -27,34 +27,10 @@
                 </select>
             </div>
         </div>
-        <button type="button" class="btn btn-primary" @onclick="ToggleGame">
-            @GameState.ButtonText
-        </button>
     </form>
 </div>
 
-<div class="tictactoe-board @(GameState.GameStarted ? "" : "disabled")">
-    @for (int row = 0; row < Constants.BoardSize; row++)
-    {
-        <div class="tictactoe-column">
-            @for (int col = 0; col < Constants.BoardSize; col++)
-            {
-                int savedRow = row;
-                int savedCol = col;
-                <div class="tictactoe-gamepiece" @onclick="@(() => OnGamePieceClicked(savedRow, savedCol))">
-                    @if (GameState.Board.Board[row, col].Style != Code.PieceStyle.Blank)
-                    {
-                        <span class="tictactoe-@GameState.Board.Board[row,col].Style.ToString().ToLower() @(GameState.Board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
-                            @GameState.Board.Board[row, col].Style
-                        </span>
-                    }
-                </div>
-            }
-        </div>
-    }
-</div>
-
-<div class="turn-text-container">
+<div class="turn-text-fixed">
     @if (GameState.GameStarted && !GameState.Board.GameComplete)
     {
         <h2 class="turn-text">@GameState.Board.CurrentStyle's Turn!</h2>
@@ -63,6 +39,39 @@
     {
         <h2 class="turn-text">@GameState.GameCompleteMessage</h2>
     }
+    else if (!GameState.GameStarted)
+    {
+        <h2 class="turn-text">@GameState.SelectPlayers</h2>
+    }
+</div>
+
+<div class="d-flex align-items-center mt-3 gap-2">
+    <button type="button" class="btn btn-primary" @onclick="ToggleGame">
+        @GameState.ButtonText
+    </button>
+</div>
+
+<div class="board-wrapper" style="position: relative;">
+    <div class="tictactoe-board @(GameState.GameStarted ? "" : "disabled")">
+        @for (int row = 0; row < Constants.BoardSize; row++)
+        {
+            <div class="tictactoe-column">
+                @for (int col = 0; col < Constants.BoardSize; col++)
+                {
+                    int savedRow = row;
+                    int savedCol = col;
+                    <div class="tictactoe-gamepiece" @onclick="@(() => OnGamePieceClicked(savedRow, savedCol))">
+                        @if (GameState.Board.Board[row, col].Style != Code.PieceStyle.Blank)
+                        {
+                            <span class="tictactoe-@GameState.Board.Board[row,col].Style.ToString().ToLower() @(GameState.Board.IsGamePieceAWinningPiece(row, col) ? "flashing" : "")">
+                                @GameState.Board.Board[row, col].Style
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 @code {

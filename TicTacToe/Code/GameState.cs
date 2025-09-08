@@ -9,8 +9,9 @@ public class GameState
     public bool GameStarted { get; set; }
     public string ButtonText => GameStarted ? "Stop Game" : "Start Game";
     public string GameCompleteMessage { get; private set; } = string.Empty;
+    public string SelectPlayers { get; private set; } = "Select Players";
     public Maybe<WinningPlay> WinningPlay { get; private set; } = Maybe<WinningPlay>.None;
-    public ComputerPlayer ComputerPlayer { get; } // Add this property
+    public ComputerPlayer ComputerPlayer { get; }
 
     public GameState(ILogger<ComputerPlayer> logger)
     {
