@@ -6,22 +6,26 @@
 
 <PageTitle>TicTacToe</PageTitle>
 
-<div>
+<div class="container-fluid px-3">
     <h4>Select Player Types</h4>
     <form>
-        <div class="mb-3">
-            <label for="playerX" class="form-label">Player X</label>
-            <select id="playerX" class="form-select" @bind="playerXType" disabled="@GameState.GameStarted">
-                <option value="Human">Human</option>
-                <option value="Computer">Computer</option>
-            </select>
+        <div class="mb-3 row">
+            <label for="playerX" class="col-auto col-form-label">Player X</label>
+            <div class="col">
+                <select id="playerX" class="form-select" @bind="playerXType" disabled="@GameState.GameStarted">
+                    <option value="Human">Human</option>
+                    <option value="Computer">Computer</option>
+                </select>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="playerO" class="form-label">Player O</label>
-            <select id="playerO" class="form-select" @bind="playerOType" disabled="@GameState.GameStarted">
-                <option value="Human">Human</option>
-                <option value="Computer">Computer</option>
-            </select>
+        <div class="mb-3 row">
+            <label for="playerO" class="col-auto col-form-label mb-0">Player O</label>
+            <div class="col">
+                <select id="playerO" class="form-select" @bind="playerOType" disabled="@GameState.GameStarted">
+                    <option value="Human">Human</option>
+                    <option value="Computer">Computer</option>
+                </select>
+            </div>
         </div>
         <button type="button" class="btn btn-primary" @onclick="ToggleGame">
             @GameState.ButtonText
