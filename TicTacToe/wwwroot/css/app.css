@@ -60,9 +60,9 @@ h4 {
     font-weight: bold;
     color: #333;
     padding-top: 0.4em;
-    background-color: #b6fcb6; /* Light green */
+    background-color: #b6fcb6 !important; /* Light green */
     border-radius: 12px;
-    text-align: center;
+    text-align: center !important;
     border: 2px solid #7be87b;
     left: 50%;
 }
