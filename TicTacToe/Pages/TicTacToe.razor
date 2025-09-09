@@ -30,7 +30,7 @@
     </form>
 </div>
 
-<div class="turn-text-fixed">
+<div class="turn-text-fixed" aria-label="Select Player Types">
     @if (GameState.GameStarted && !GameState.Board.GameComplete)
     {
         <h2 class="turn-text">@GameState.Board.CurrentStyle's Turn!</h2>

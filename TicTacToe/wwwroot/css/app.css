@@ -60,9 +60,9 @@ h4 {
     font-weight: bold;
     color: #333;
     padding-top: 0.4em;
-    background-color: #b6fcb6 !important; /* Light green */
+    background-color: #b6fcb6; /* Light green */
     border-radius: 12px;
-    text-align: center !important;
+    text-align: center;
     border: 2px solid #7be87b;
     left: 50%;
 }
@@ -128,12 +128,4 @@ h4 {
 
 .flashing {
     animation: flash 1s infinite;
-}
-
-.game-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
 }
