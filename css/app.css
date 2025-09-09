@@ -129,11 +129,3 @@ h4 {
 .flashing {
     animation: flash 1s infinite;
 }
-
-.game-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-}
