@@ -30,18 +30,18 @@
     </form>
 </div>
 
-<div class="turn-text-fixed" aria-label="Select Player Types">
+<div class="info-bar" aria-label="Select Player Types">
     @if (GameState.GameStarted && !GameState.Board.GameComplete)
     {
-        <h2 class="turn-text">@GameState.Board.CurrentStyle's Turn!</h2>
+        <h2 class="info">@GameState.Board.CurrentStyle's Turn!</h2>
     }
     else if (GameState.GameStarted || !string.IsNullOrEmpty(GameState.GameCompleteMessage))
     {
-        <h2 class="turn-text">@GameState.GameCompleteMessage</h2>
+        <h2 class="info">@GameState.GameCompleteMessage</h2>
     }
     else if (!GameState.GameStarted)
     {
-        <h2 class="turn-text">@GameState.SelectPlayers</h2>
+        <h2 class="info">@GameState.SelectPlayers</h2>
     }
 </div>
 
