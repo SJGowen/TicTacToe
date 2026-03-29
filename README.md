@@ -135,7 +135,7 @@ Guarantees optimal play
 
 ### Strategy Pattern Implementation
 
-This game uses the **Strategy Pattern** for flexible AI implementation:
+This game uses the **Strategy Pattern** for flexible AI implementation, and all strategies share common helpers via `BoardUtilities`:
 
 ```
 ┌─────────────────────────────────────┐
@@ -154,6 +154,15 @@ This game uses the **Strategy Pattern** for flexible AI implementation:
 ┌────────┐┌──────────┐┌──────┐┌──────────┐
 │ Easy   ││ Medium   ││ Hard ││ Extreme  │
 └────────┘└──────────┘└──────┘└──────────┘
+             ▲
+             │
+    ┌─────────────────────────────┐
+    │      BoardUtilities         │
+    │  (shared helpers:           │
+    │   GetBlankMoves,            │
+    │   IsWinningMove,            │
+    │   GetRandomMove)            │
+    └─────────────────────────────┘
 ```
 
 **Benefits:**
@@ -161,6 +170,7 @@ This game uses the **Strategy Pattern** for flexible AI implementation:
 - ✅ Easy to add new strategies without modifying existing code
 - ✅ Clear separation of concerns
 - ✅ Extensible design pattern
+- ✅ Shared helpers for DRY code
 
 ### Project Structure
 
@@ -173,6 +183,7 @@ TicTacToe/
 │   │   ├── MediumStrategy.cs
 │   │   ├── HardStrategy.cs
 │   │   └── ExtremeStrategy.cs
+│   ├── BoardUtilities.cs    # Shared board helpers (GetBlankMoves, IsWinningMove, GetRandomMove)
 │   ├── ComputerPlayer.cs    # Strategy delegator
 │   ├── GameBoard.cs         # Game logic & factory
 │   ├── GameState.cs         # State management
@@ -281,10 +292,20 @@ The application will be available at `https://localhost:5001`
 - **Language**: C# 13 (.NET 10)
 - **UI Framework**: Bootstrap 5
 - **Testing**: xUnit
-- **Architecture**: Strategy Pattern
+- **Architecture**: Strategy Pattern + Shared Utilities
 - **Logging**: Microsoft.Extensions.Logging
 
 ## 📚 Key Classes
+
+### `BoardUtilities` (shared helpers)
+```csharp
+public static class BoardUtilities
+{
+    public static IEnumerable<Position> GetBlankMoves(GameBoard board);
+    public static bool IsWinningMove(GameBoard board, Position move, PieceStyle style);
+    public static Maybe<Position> GetRandomMove(ImmutableArray<Position> squares);
+}
+```
 
 ### `IComputerStrategy` Interface
 ```csharp
@@ -298,8 +319,7 @@ public interface IComputerStrategy
 ```csharp
 public class ComputerPlayer : Player
 {
-    public ComputerPlayer(PieceStyle style, IComputerStrategy strategy, ILogger<ComputerPlayer>? logger = null)
-    
+    public ComputerPlayer(PieceStyle style, IComputerStrategy strategy, ILogger<ComputerPlayer>? logger = null);
     public override Maybe<Position> GetMove(GameBoard board)
     {
         return _strategy.GetMove(board, Style);
