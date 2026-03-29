@@ -26,7 +26,7 @@ public class ExtremeStrategy : IComputerStrategy
 
         try
         {
-            var blankMoves = GetBlankMoves(board).ToList();
+            var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
             _logger?.LogDebug($"Extreme - Available moves: {blankMoves.Count}");
 
             if (blankMoves.Count == 0)
@@ -101,7 +101,7 @@ public class ExtremeStrategy : IComputerStrategy
             return 0;
         }
 
-        var blankMoves = GetBlankMoves(board).ToList();
+        var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
         if (blankMoves.Count == 0)
             return 0;
 
@@ -130,10 +130,4 @@ public class ExtremeStrategy : IComputerStrategy
             return minScore;
         }
     }
-
-    private static IEnumerable<Position> GetBlankMoves(GameBoard board) =>
-        from row in Enumerable.Range(0, Constants.BoardSize)
-        from col in Enumerable.Range(0, Constants.BoardSize)
-        where board.Board[row, col].Style == PieceStyle.Blank
-        select new Position(row, col);
 }

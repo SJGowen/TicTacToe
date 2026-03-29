@@ -18,7 +18,7 @@ public class MediumStrategy : IComputerStrategy
     {
         ArgumentNullException.ThrowIfNull(board);
 
-        var blankMoves = GetBlankMoves(board).ToList();
+        var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
         _logger?.LogDebug($"Medium - Available moves: {blankMoves.Count}");
 
         if (blankMoves.Count == 0)
@@ -55,7 +55,7 @@ public class MediumStrategy : IComputerStrategy
         _logger?.LogDebug($"Medium - Searching for winning move for {style}");
         foreach (var move in moves)
         {
-            if (IsWinningMove(board, move, style))
+            if (BoardUtilities.IsWinningMove(board, move, style))
             {
                 _logger?.LogDebug($"Medium - Found winning move for {style} at ({move.Row}, {move.Col})");
                 return Maybe<Position>.Some(move);
@@ -63,18 +63,4 @@ public class MediumStrategy : IComputerStrategy
         }
         return Maybe<Position>.None;
     }
-
-    private static bool IsWinningMove(GameBoard board, Position move, PieceStyle style)
-    {
-        var newBoard = board.Clone();
-        newBoard.Board[move.Row, move.Col].Style = style;
-        var winner = newBoard.GetWinner();
-        return winner.HasValue && winner.Value.WinningStyle == style;
-    }
-
-    private static IEnumerable<Position> GetBlankMoves(GameBoard board) =>
-        from row in Enumerable.Range(0, Constants.BoardSize)
-        from col in Enumerable.Range(0, Constants.BoardSize)
-        where board.Board[row, col].Style == PieceStyle.Blank
-        select new Position(row, col);
 }

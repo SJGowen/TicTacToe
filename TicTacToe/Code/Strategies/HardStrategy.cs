@@ -25,7 +25,7 @@ public class HardStrategy : IComputerStrategy
 
         try
         {
-            var blankMoves = GetBlankMoves(board).ToList();
+            var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
             _logger?.LogDebug($"Hard - Available moves: {blankMoves.Count}");
 
             var move = TryGetMove(board, blankMoves, computerStyle);
@@ -65,7 +65,7 @@ public class HardStrategy : IComputerStrategy
         _logger?.LogDebug($"Hard - Searching for winning move for {style}");
         foreach (var move in moves)
         {
-            if (IsWinningMove(board, move, style))
+            if (BoardUtilities.IsWinningMove(board, move, style))
             {
                 _logger?.LogDebug($"Hard - Found winning move for {style} at ({move.Row}, {move.Col})");
                 return Maybe<Position>.Some(move);
@@ -119,7 +119,7 @@ public class HardStrategy : IComputerStrategy
         if ((board.Board[0, 0].Style == opponentStyle && board.Board[2, 2].Style == opponentStyle) ||
             (board.Board[0, 2].Style == opponentStyle && board.Board[2, 0].Style == opponentStyle))
         {
-            var randomEdge = GetRandomMove(MiddleEdges);
+            var randomEdge = BoardUtilities.GetRandomMove(MiddleEdges);
             if (randomEdge.HasValue)
             {
                 _logger?.LogDebug($"Hard - Taking edge ({randomEdge.Value.Row}, {randomEdge.Value.Col}) to block three corners");
@@ -137,7 +137,7 @@ public class HardStrategy : IComputerStrategy
 
         if (availableCorners.Length > 0)
         {
-            var randomCorner = GetRandomMove([.. availableCorners]);
+            var randomCorner = BoardUtilities.GetRandomMove([.. availableCorners]);
             if (randomCorner.HasValue)
             {
                 _logger?.LogDebug($"Hard - Taking corner ({randomCorner.Value.Row}, {randomCorner.Value.Col})");
@@ -155,7 +155,7 @@ public class HardStrategy : IComputerStrategy
 
         if (availableEdges.Count() > 0)
         {
-            var randomEdge = GetRandomMove([.. availableEdges]);
+            var randomEdge = BoardUtilities.GetRandomMove([.. availableEdges]);
             if (randomEdge.HasValue)
             {
                 _logger?.LogDebug($"Hard - Taking edge ({randomEdge.Value.Row}, {randomEdge.Value.Col})");
@@ -164,25 +164,4 @@ public class HardStrategy : IComputerStrategy
         }
         return Maybe<Position>.None;
     }
-
-    private static bool IsWinningMove(GameBoard board, Position move, PieceStyle style)
-    {
-        var newBoard = board.Clone();
-        newBoard.Board[move.Row, move.Col].Style = style;
-        var winner = newBoard.GetWinner();
-        return winner.HasValue && winner.Value.WinningStyle == style;
-    }
-
-    private static Maybe<Position> GetRandomMove(ImmutableArray<Position> squares)
-    {
-        return squares.Length > 0 
-            ? Maybe<Position>.Some(squares[Random.Shared.Next(squares.Length)])
-            : Maybe<Position>.None;
-    }
-
-    private static IEnumerable<Position> GetBlankMoves(GameBoard board) =>
-        from row in Enumerable.Range(0, Constants.BoardSize)
-        from col in Enumerable.Range(0, Constants.BoardSize)
-        where board.Board[row, col].Style == PieceStyle.Blank
-        select new Position(row, col);
 }
