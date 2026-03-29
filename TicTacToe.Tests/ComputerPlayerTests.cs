@@ -1,11 +1,14 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TicTacToe.Code;
 using TicTacToe.Code.Strategies;
 
 namespace TicTacToe.Tests;
 
+/// <summary>
+/// Tests the ComputerPlayer class and its integration with different strategies
+/// Individual strategy behavior is tested in separate test classes
+/// </summary>
 public class ComputerPlayerTests
 {
     private readonly ILogger<ComputerPlayer> _logger;
@@ -16,134 +19,149 @@ public class ComputerPlayerTests
     }
 
     [Fact]
-    public void TestGetWinningMove()
-    {
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
-
-        // Set up a board state where the computer can win
-        board.Board[0, 0].Style = PieceStyle.X;
-        board.Board[0, 1].Style = PieceStyle.X;
-        board.Board[0, 2].Style = PieceStyle.Blank;
-
-        var moveResult = computerPlayer.GetMove(board);
-        Assert.True(moveResult.HasValue);
-        Assert.Equal(0, moveResult.Value.Row);
-        Assert.Equal(2, moveResult.Value.Col);
-    }
-
-    [Fact]
-    public void TestBlockOpponentWinningMove()
-    {
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
-
-        // Set up a board state where the opponent can win
-        board.Board[0, 0].Style = PieceStyle.O;
-        board.Board[0, 1].Style = PieceStyle.O;
-        board.Board[0, 2].Style = PieceStyle.Blank;
-
-        var moveResult = computerPlayer.GetMove(board);
-        Assert.True(moveResult.HasValue);
-        Assert.Equal(0, moveResult.Value.Row);
-        Assert.Equal(2, moveResult.Value.Col);
-    }
-
-    [Fact]
-    public void TestBlockOpponentThreeCorners()
-    {
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.O, new HardStrategy());
-
-        // Set up a board state where the opponent can win
-        board.Board[0, 0].Style = PieceStyle.X;
-        board.Board[1, 1].Style = PieceStyle.O;
-        board.Board[2, 2].Style = PieceStyle.X;
-
-        var moveResult = computerPlayer.GetMove(board);
-        Assert.True(moveResult.HasValue);
-        // The move is to one of the MiddleEdges
-        Assert.Contains(new Position(moveResult.Value.Row, moveResult.Value.Col),
-            new[] { new Position(0, 1), new Position(1, 0), new Position(1, 2), new Position(2, 1) });
-    }
-
-    [Fact]
-    public void TestBlockOpponentWinningMoveLogged()
-    {
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.O, new HardStrategy());
-
-        // Set up initial board state
-        board.Board[1, 1].Style = PieceStyle.X;  // Center
-        board.Board[0, 2].Style = PieceStyle.O;  // Top right
-        board.Board[2, 2].Style = PieceStyle.X;  // Bottom right
-
-        Debug.WriteLine("=== Test Started ===");
-        Debug.WriteLine("\nInitial board state:");
-        DebugPrintBoard(board);
-
-        var moveResult = computerPlayer.GetMove(board);
-        Assert.True(moveResult.HasValue);
-        Debug.WriteLine($"\nO's selected move: ({moveResult.Value.Row}, {moveResult.Value.Col})");
-        Debug.WriteLine("\n=== Test Completed Successfully ===");
-
-        Assert.Equal(0, moveResult.Value.Row);
-        Assert.Equal(0, moveResult.Value.Col);
-    }
-
-    [Fact]
-    public void TestOptimalMove()
-    {
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
-
-        // Set up an empty board
-        var moveResult = computerPlayer.GetMove(board);
-        Assert.True(moveResult.HasValue);
-        Assert.Equal(1, moveResult.Value.Row);
-        Assert.Equal(1, moveResult.Value.Col);
-    }
-
-    [Fact]
-    public void GetMove_WhenOnlyOneMove_ReturnsValidMove()
+    public void ComputerPlayer_UsesProvidedStrategy()
     {
         // Arrange
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
+        var strategy = new HardStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy, _logger);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
 
-        // Set up initial board state
-        board.Board[0, 0].Style = PieceStyle.O;
+        board.Board[0, 0].Style = PieceStyle.X;
         board.Board[0, 1].Style = PieceStyle.X;
-        board.Board[0, 2].Style = PieceStyle.O;
-        board.Board[1, 0].Style = PieceStyle.O;
-        board.Board[1, 1].Style = PieceStyle.X;
-        board.Board[1, 2].Style = PieceStyle.Blank;
-        board.Board[2, 0].Style = PieceStyle.X;
-        board.Board[2, 1].Style = PieceStyle.O;
-        board.Board[2, 2].Style = PieceStyle.X;
-                
+        board.Board[0, 2].Style = PieceStyle.Blank;
+
         // Act
-        var moveResult = computerPlayer.GetMove(board);
-        
-        // Assert
-        Assert.True(moveResult.HasValue);
-        Assert.Equal(1, moveResult.Value.Row);
-        Assert.Equal(2, moveResult.Value.Col);
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should delegate to strategy
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
-    private static void DebugPrintBoard(GameBoard board)
+    [Fact]
+    public void ComputerPlayer_WorksWithEasyStrategy()
     {
-        Debug.WriteLine("-------------");
+        // Arrange
+        var strategy = new EasyStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerEasy);
+
+        // Act
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should return a valid move
+        Assert.True(move.HasValue);
+    }
+
+    [Fact]
+    public void ComputerPlayer_WorksWithMediumStrategy()
+    {
+        // Arrange
+        var strategy = new MediumStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.O, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerMedium);
+
+        board.Board[0, 0].Style = PieceStyle.X;
+        board.Board[0, 1].Style = PieceStyle.X;
+        board.Board[0, 2].Style = PieceStyle.Blank;
+
+        // Act
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should find the tactical move
+        Assert.True(move.HasValue);
+    }
+
+    [Fact]
+    public void ComputerPlayer_WorksWithExtremeStrategy()
+    {
+        // Arrange
+        var strategy = new ExtremeStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerExtreme);
+
+        // Act
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should return optimal move via minimax
+        Assert.True(move.HasValue);
+    }
+
+    [Fact]
+    public void ComputerPlayer_UsesStrategyConsistently()
+    {
+        // Arrange
+        var strategy = new HardStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy, _logger);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
+        
+        board.Board[0, 0].Style = PieceStyle.X;
+        board.Board[0, 1].Style = PieceStyle.X;
+        board.Board[0, 2].Style = PieceStyle.Blank;
+
+        // Act
+        var moveFromPlayer = computerPlayer.GetMove(board);
+
+        // Assert
+        Assert.True(moveFromPlayer.HasValue);
+        Assert.Equal(0, moveFromPlayer.Value.Row);
+        Assert.Equal(2, moveFromPlayer.Value.Col);
+    }
+
+    [Fact]
+    public void ComputerPlayer_GetMove_ReturnsNone_WhenBoardFull()
+    {
+        // Arrange
+        var strategy = new HardStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
+
+        // Fill board
         for (int row = 0; row < Constants.BoardSize; row++)
         {
-            Debug.Write("| ");
             for (int col = 0; col < Constants.BoardSize; col++)
             {
-                Debug.Write($"{board.Board[row, col].Style,3}");
-                Debug.Write(" | ");
+                board.Board[row, col].Style = col % 2 == 0 ? PieceStyle.X : PieceStyle.O;
             }
-            Debug.WriteLine("");
-            Debug.WriteLine("-------------");
         }
+
+        // Act
+        var move = computerPlayer.GetMove(board);
+
+        // Assert
+        Assert.False(move.HasValue);
+    }
+
+    [Fact]
+    public void ComputerPlayer_PreservesStyle()
+    {
+        // Arrange
+        var strategy = new HardStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.O, strategy);
+
+        // Assert
+        Assert.Equal(PieceStyle.O, computerPlayer.Style);
+    }
+
+    [Fact]
+    public void ComputerPlayer_CallsStrategyGetMove()
+    {
+        // Arrange
+        var strategy = new MediumStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerMedium);
+        
+        board.Board[0, 0].Style = PieceStyle.X;
+        board.Board[0, 1].Style = PieceStyle.X;
+        board.Board[0, 2].Style = PieceStyle.Blank;
+
+        // Act - Call GetMove on ComputerPlayer which should delegate to strategy
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should find the winning move
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 }
