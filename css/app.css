@@ -53,16 +53,16 @@ h4 {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
-.turn-text-fixed {
+.info-bar {
     display: flex;
     justify-content: center;
     font-size: 1.6rem;
     font-weight: bold;
     color: #333;
+    height: 54px;
     padding-top: 0.4em;
     background-color: #b6fcb6; /* Light green */
     border-radius: 12px;
-    text-align: center;
     border: 2px solid #7be87b;
     left: 50%;
 }
@@ -80,8 +80,9 @@ h4 {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 350px;
+    max-width: 60vmin;
     aspect-ratio: 1 / 1;
+    margin: 0 auto;
 }
 
 .tictactoe-column {
@@ -109,7 +110,6 @@ h4 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 @keyframes flash {
