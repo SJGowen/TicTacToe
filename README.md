@@ -2,7 +2,7 @@
 
 A modern, interactive Tic Tac Toe game built with **Blazor WebAssembly** and **.NET 10**, featuring four distinct AI difficulty levels with strategic gameplay at each level.
 
-![Game Screenshot](#screenshot-placeholder)
+![Game Screenshot](ScreenShot.png)
 
 ## ✨ Features
 
