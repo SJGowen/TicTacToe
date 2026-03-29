@@ -1,10 +1,11 @@
 using TicTacToe.Code;
+using TicTacToe.Code.Strategies;
 
 namespace TicTacToe.Code;
 
 public class GameState
 {
-    private readonly ILogger<ComputerPlayer> _logger;
+    private readonly ILogger<ComputerPlayer>? _logger;
     public GameBoard Board { get; private set; }
     public bool GameStarted { get; set; }
     public string ButtonText => GameStarted ? "Stop Game" : "Start Game";
@@ -13,10 +14,10 @@ public class GameState
     public Maybe<WinningPlay> WinningPlay { get; private set; } = Maybe<WinningPlay>.None;
     public ComputerPlayer ComputerPlayer { get; }
 
-    public GameState(ILogger<ComputerPlayer> logger)
+    public GameState(ILogger<ComputerPlayer>? logger = null)
     {
         _logger = logger;
-        ComputerPlayer = new ComputerPlayer(PieceStyle.O, _logger);
+        ComputerPlayer = new ComputerPlayer(PieceStyle.O, new HardStrategy(), _logger);
         Board = new GameBoard(PlayerType.Human, PlayerType.Human, _logger);
     }
 

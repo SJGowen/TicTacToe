@@ -1,0 +1,139 @@
+using System.Collections.Immutable;
+
+namespace TicTacToe.Code.Strategies;
+
+/// <summary>
+/// Extreme difficulty: Computer uses minimax-style lookahead to evaluate move outcomes
+/// Considers future game states to make optimal decisions
+/// </summary>
+public class ExtremeStrategy : IComputerStrategy
+{
+    private static readonly Position Center = new(1, 1);
+    private static readonly ImmutableArray<Position> Corners = [new(0, 0), new(0, 2), new(2, 0), new(2, 2)];
+    private static readonly ImmutableArray<Position> MiddleEdges = [new(0, 1), new(1, 0), new(1, 2), new(2, 1)];
+    
+    private readonly ILogger<ExtremeStrategy>? _logger;
+    private const int MaxDepth = 9; // Full game tree for 3x3 board
+
+    public ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null)
+    {
+        _logger = logger;
+    }
+
+    public Maybe<Position> GetMove(GameBoard board, PieceStyle computerStyle)
+    {
+        ArgumentNullException.ThrowIfNull(board);
+
+        try
+        {
+            var blankMoves = GetBlankMoves(board).ToList();
+            _logger?.LogDebug($"Extreme - Available moves: {blankMoves.Count}");
+
+            if (blankMoves.Count == 0)
+            {
+                _logger?.LogInformation("Extreme - No moves available");
+                return Maybe<Position>.None;
+            }
+
+            // Use minimax to evaluate all moves
+            var bestMove = FindBestMove(board, blankMoves, computerStyle);
+            if (bestMove.HasValue)
+            {
+                _logger?.LogInformation($"Extreme - Selected optimal move at ({bestMove.Value.Row}, {bestMove.Value.Col})");
+                return bestMove;
+            }
+
+            // Fallback to first available move
+            return Maybe<Position>.Some(blankMoves[0]);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Extreme - An error occurred while getting computer move");
+            throw;
+        }
+    }
+
+    private Maybe<Position> FindBestMove(GameBoard board, List<Position> availableMoves, PieceStyle computerStyle)
+    {
+        var opponentStyle = computerStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
+        var bestScore = int.MinValue;
+        Maybe<Position> bestMove = Maybe<Position>.None;
+
+        foreach (var move in availableMoves)
+        {
+            var testBoard = board.Clone();
+            testBoard.Board[move.Row, move.Col].Style = computerStyle;
+
+            var score = Minimax(testBoard, 0, false, computerStyle, opponentStyle);
+            
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestMove = Maybe<Position>.Some(move);
+                _logger?.LogDebug($"Extreme - Move ({move.Row}, {move.Col}) scored: {score}");
+            }
+        }
+
+        return bestMove;
+    }
+
+    private int Minimax(GameBoard board, int depth, bool isMaximizing, PieceStyle computerStyle, PieceStyle opponentStyle)
+    {
+        var winner = board.GetWinner();
+        
+        // Terminal states
+        if (winner.HasValue)
+        {
+            var score = winner.Value.WinningStyle == computerStyle ? 10 - depth : depth - 10;
+            _logger?.LogDebug($"Extreme - Terminal state at depth {depth}: {winner.Value.WinningStyle} wins, score: {score}");
+            return score;
+        }
+
+        if (board.ItsADraw())
+        {
+            _logger?.LogDebug($"Extreme - Draw at depth {depth}");
+            return 0;
+        }
+
+        if (depth >= MaxDepth)
+        {
+            _logger?.LogDebug($"Extreme - Max depth reached at {depth}");
+            return 0;
+        }
+
+        var blankMoves = GetBlankMoves(board).ToList();
+        if (blankMoves.Count == 0)
+            return 0;
+
+        if (isMaximizing)
+        {
+            var maxScore = int.MinValue;
+            foreach (var move in blankMoves)
+            {
+                var testBoard = board.Clone();
+                testBoard.Board[move.Row, move.Col].Style = computerStyle;
+                var score = Minimax(testBoard, depth + 1, false, computerStyle, opponentStyle);
+                maxScore = Math.Max(score, maxScore);
+            }
+            return maxScore;
+        }
+        else
+        {
+            var minScore = int.MaxValue;
+            foreach (var move in blankMoves)
+            {
+                var testBoard = board.Clone();
+                testBoard.Board[move.Row, move.Col].Style = opponentStyle;
+                var score = Minimax(testBoard, depth + 1, true, computerStyle, opponentStyle);
+                minScore = Math.Min(score, minScore);
+            }
+            return minScore;
+        }
+    }
+
+    private static IEnumerable<Position> GetBlankMoves(GameBoard board) =>
+        from row in Enumerable.Range(0, Constants.BoardSize)
+        from col in Enumerable.Range(0, Constants.BoardSize)
+        where board.Board[row, col].Style == PieceStyle.Blank
+        select new Position(row, col);
+}

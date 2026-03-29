@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using TicTacToe.Code;
+using TicTacToe.Code.Strategies;
 
 namespace TicTacToe.Tests;
 
@@ -17,8 +18,8 @@ public class ComputerPlayerTests
     [Fact]
     public void TestGetWinningMove()
     {
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
 
         // Set up a board state where the computer can win
         board.Board[0, 0].Style = PieceStyle.X;
@@ -34,8 +35,8 @@ public class ComputerPlayerTests
     [Fact]
     public void TestBlockOpponentWinningMove()
     {
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
 
         // Set up a board state where the opponent can win
         board.Board[0, 0].Style = PieceStyle.O;
@@ -51,8 +52,8 @@ public class ComputerPlayerTests
     [Fact]
     public void TestBlockOpponentThreeCorners()
     {
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.O);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.O, new HardStrategy());
 
         // Set up a board state where the opponent can win
         board.Board[0, 0].Style = PieceStyle.X;
@@ -69,8 +70,8 @@ public class ComputerPlayerTests
     [Fact]
     public void TestBlockOpponentWinningMoveLogged()
     {
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.O);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.O, new HardStrategy());
 
         // Set up initial board state
         board.Board[1, 1].Style = PieceStyle.X;  // Center
@@ -93,8 +94,8 @@ public class ComputerPlayerTests
     [Fact]
     public void TestOptimalMove()
     {
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
 
         // Set up an empty board
         var moveResult = computerPlayer.GetMove(board);
@@ -107,8 +108,8 @@ public class ComputerPlayerTests
     public void GetMove_WhenOnlyOneMove_ReturnsValidMove()
     {
         // Arrange
-        var board = new GameBoard(PlayerType.Human, PlayerType.Computer, _logger);
-        var computerPlayer = new ComputerPlayer(PieceStyle.X);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard, _logger);
+        var computerPlayer = new ComputerPlayer(PieceStyle.X, new HardStrategy());
 
         // Set up initial board state
         board.Board[0, 0].Style = PieceStyle.O;

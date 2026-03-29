@@ -1,8 +1,10 @@
-﻿namespace TicTacToe.Code;
+﻿using TicTacToe.Code.Strategies;
+
+namespace TicTacToe.Code;
 
 public class GameBoard
 {
-    private readonly ILogger<ComputerPlayer> _logger;
+    private readonly ILogger<ComputerPlayer>? _logger;
     public GamePiece[,] Board { get; private set; }
     public PieceStyle CurrentStyle { get; private set; } = PieceStyle.X;
     public bool GameComplete => GetWinner().HasValue || ItsADraw();
@@ -11,7 +13,7 @@ public class GameBoard
     private Player _playerO;
     private Player CurrentPlayer => CurrentStyle == PieceStyle.X ? _playerX : _playerO;
 
-    public GameBoard(PlayerType playerXType, PlayerType playerOType, ILogger<ComputerPlayer> logger)
+    public GameBoard(PlayerType playerXType, PlayerType playerOType, ILogger<ComputerPlayer>? logger = null)
     {
         _logger = logger;
         Board = new GamePiece[Constants.BoardSize, Constants.BoardSize];
@@ -33,7 +35,10 @@ public class GameBoard
         return playerType switch
         {
             PlayerType.Human => new HumanPlayer(style),
-            PlayerType.Computer => new ComputerPlayer(style, _logger),
+            PlayerType.ComputerEasy => new ComputerPlayer(style, new EasyStrategy(), _logger),
+            PlayerType.ComputerMedium => new ComputerPlayer(style, new MediumStrategy(), _logger),
+            PlayerType.ComputerHard => new ComputerPlayer(style, new HardStrategy(), _logger),
+            PlayerType.ComputerExtreme => new ComputerPlayer(style, new ExtremeStrategy(), _logger),
             _ => throw new ArgumentException("Invalid player type")
         };
     }
@@ -87,7 +92,7 @@ public class GameBoard
         return winningPlay.HasValue && winningPlay.Value.WinningMoves?.Contains($"{row},{col}") == true;
     }
 
-    private bool ItsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
+    public bool ItsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
 
     public Maybe<WinningPlay> GetWinner()
     {
