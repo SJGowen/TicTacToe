@@ -259,24 +259,6 @@ dotnet run --project TicTacToe
 
 The application will be available at `https://localhost:5001`
 
-## 📸 Screenshots
-
-### Game Selection Screen
-![Player Selection](./docs/screenshots/player-selection.png)
-*Select Human vs Computer and choose difficulty level*
-
-### Easy Difficulty
-![Easy Game](./docs/screenshots/easy-game.png)
-*Playing against Computer Easy - random and unpredictable*
-
-### Hard Difficulty
-![Hard Game](./docs/screenshots/hard-game.png)
-*Playing against Computer Hard - strategic and challenging*
-
-### Game Over
-![Game Over](./docs/screenshots/game-over.png)
-*Showing win condition with flashing winning pieces*
-
 ## 🎯 How to Play
 
 1. **Select Players**: Choose Human and Computer difficulty level
