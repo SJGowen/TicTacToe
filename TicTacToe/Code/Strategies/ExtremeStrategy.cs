@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 
 namespace TicTacToe.Code.Strategies;
 
@@ -14,6 +15,7 @@ public class ExtremeStrategy : IComputerStrategy
     
     private readonly ILogger<ExtremeStrategy>? _logger;
     private const int MaxDepth = 9; // Full game tree for 3x3 board
+    private readonly Dictionary<string, int> _memo = new();
 
     public ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null)
     {
@@ -22,6 +24,7 @@ public class ExtremeStrategy : IComputerStrategy
 
     public Maybe<Position> GetMove(GameBoard board, PieceStyle computerStyle)
     {
+        _memo.Clear(); // Clear cache for each new move
         ArgumentNullException.ThrowIfNull(board);
 
         try
@@ -79,6 +82,13 @@ public class ExtremeStrategy : IComputerStrategy
 
     private int Minimax(GameBoard board, int depth, bool isMaximizing, PieceStyle computerStyle, PieceStyle opponentStyle)
     {
+        string hash = GetBoardHash(board, isMaximizing ? computerStyle : opponentStyle);
+        if (_memo.TryGetValue(hash, out int cachedScore))
+        {
+            _logger?.LogDebug($"Extreme - Cache hit for hash {hash} at depth {depth}: score {cachedScore}");
+            return cachedScore;
+        }
+
         var winner = board.GetWinner();
         
         // Terminal states
@@ -86,25 +96,32 @@ public class ExtremeStrategy : IComputerStrategy
         {
             var score = winner.Value.WinningStyle == computerStyle ? 10 - depth : depth - 10;
             _logger?.LogDebug($"Extreme - Terminal state at depth {depth}: {winner.Value.WinningStyle} wins, score: {score}");
+            _memo[hash] = score;
             return score;
         }
 
         if (board.ItsADraw())
         {
             _logger?.LogDebug($"Extreme - Draw at depth {depth}");
+            _memo[hash] = 0;
             return 0;
         }
 
         if (depth >= MaxDepth)
         {
             _logger?.LogDebug($"Extreme - Max depth reached at {depth}");
+            _memo[hash] = 0;
             return 0;
         }
 
         var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
         if (blankMoves.Count == 0)
+        {
+            _memo[hash] = 0;
             return 0;
+        }
 
+        int result;
         if (isMaximizing)
         {
             var maxScore = int.MinValue;
@@ -115,7 +132,7 @@ public class ExtremeStrategy : IComputerStrategy
                 var score = Minimax(testBoard, depth + 1, false, computerStyle, opponentStyle);
                 maxScore = Math.Max(score, maxScore);
             }
-            return maxScore;
+            result = maxScore;
         }
         else
         {
@@ -127,7 +144,19 @@ public class ExtremeStrategy : IComputerStrategy
                 var score = Minimax(testBoard, depth + 1, true, computerStyle, opponentStyle);
                 minScore = Math.Min(score, minScore);
             }
-            return minScore;
+            result = minScore;
         }
+        _memo[hash] = result;
+        return result;
+    }
+
+    private string GetBoardHash(GameBoard board, PieceStyle currentPlayer)
+    {
+        var sb = new StringBuilder();
+        for (int row = 0; row < Constants.BoardSize; row++)
+            for (int col = 0; col < Constants.BoardSize; col++)
+                sb.Append((char)board.Board[row, col].Style);
+        sb.Append((char)currentPlayer);
+        return sb.ToString();
     }
 }
