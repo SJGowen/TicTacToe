@@ -60,7 +60,7 @@ public class ExtremeStrategy : IComputerStrategy
     {
         var opponentStyle = computerStyle == PieceStyle.X ? PieceStyle.O : PieceStyle.X;
         var bestScore = int.MinValue;
-        Maybe<Position> bestMove = Maybe<Position>.None;
+        var bestMoves = new List<Position>();
 
         foreach (var move in availableMoves)
         {
@@ -68,16 +68,21 @@ public class ExtremeStrategy : IComputerStrategy
             testBoard.Board[move.Row, move.Col].Style = computerStyle;
 
             var score = Minimax(testBoard, 0, false, computerStyle, opponentStyle);
-            
             if (score > bestScore)
             {
                 bestScore = score;
-                bestMove = Maybe<Position>.Some(move);
-                _logger?.LogDebug($"Extreme - Move ({move.Row}, {move.Col}) scored: {score}");
+                bestMoves.Clear();
+                bestMoves.Add(move);
+            }
+            else if (score == bestScore)
+            {
+                bestMoves.Add(move);
             }
         }
 
-        return bestMove;
+        if (bestMoves.Count > 0)
+            return Maybe<Position>.Some(bestMoves[Random.Shared.Next(bestMoves.Count)]);
+        return Maybe<Position>.None;
     }
 
     private int Minimax(GameBoard board, int depth, bool isMaximizing, PieceStyle computerStyle, PieceStyle opponentStyle)
