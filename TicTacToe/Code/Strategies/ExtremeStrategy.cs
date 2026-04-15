@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Text;
 
 namespace TicTacToe.Code.Strategies;
@@ -52,13 +51,17 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
         if (_memo.TryGetValue(hash, out var cached)) return cached;
 
         var terminal = EvaluateTerminal(board, depth, computerStyle);
-        if (terminal.HasValue) { _memo[hash] = terminal.Value; return terminal.Value; }
+        if (terminal.HasValue)
+        {
+            _memo.TryAdd(hash, terminal.Value);
+            return terminal.Value;
+        }
 
         var result = isMaximizing
             ? MaximizingScore(board, depth, computerStyle)
             : MinimizingScore(board, depth, computerStyle);
 
-        _memo[hash] = result;
+        _memo.TryAdd(hash, result);
         return result;
     }
 
