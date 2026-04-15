@@ -1,10 +1,11 @@
 namespace TicTacToe.Code;
 
-public struct Maybe<T>
+public readonly struct Maybe<T>
 {
     private readonly T _value;
-    public bool HasValue { get; }
-    public T Value => HasValue ? _value : throw new InvalidOperationException("No value present");
+    public readonly bool HasValue { get; }
+    public readonly T Value => HasValue ? _value : throw new InvalidOperationException("No value present");
+    public readonly Maybe<T> OrElse(Func<Maybe<T>> fallback) => HasValue ? this : fallback();
 
     private Maybe(T value)
     {
@@ -12,6 +13,6 @@ public struct Maybe<T>
         HasValue = true;
     }
 
-    public static Maybe<T> None => new Maybe<T>();
-    public static Maybe<T> Some(T value) => new Maybe<T>(value);
+    public static Maybe<T> None => new();
+    public static Maybe<T> Some(T value) => new(value);
 }

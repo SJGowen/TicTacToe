@@ -1,34 +1,16 @@
-using System.Collections.Immutable;
-
 namespace TicTacToe.Code.Strategies;
 
 /// <summary>
 /// Easy difficulty: Computer makes random moves from available positions
 /// </summary>
-public class EasyStrategy : IComputerStrategy
+public class EasyStrategy(ILogger<EasyStrategy>? logger = null) : ComputerStrategyBase
 {
-    private readonly ILogger<EasyStrategy>? _logger;
-
-    public EasyStrategy(ILogger<EasyStrategy>? logger = null)
+    protected override Maybe<Position> ChooseMove(
+        GameBoard board, List<Position> blankMoves, PieceStyle computerStyle)
     {
-        _logger = logger;
-    }
-
-    public Maybe<Position> GetMove(GameBoard board, PieceStyle computerStyle)
-    {
-        ArgumentNullException.ThrowIfNull(board);
-
-        var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
-        _logger?.LogDebug($"Easy - Available moves: {blankMoves.Count}");
-
-        if (blankMoves.Count == 0)
-        {
-            _logger?.LogInformation("Easy - No moves available");
-            return Maybe<Position>.None;
-        }
-
+        logger?.LogDebug("Easy - Available moves: {Count}", blankMoves.Count);
         var move = blankMoves[Random.Shared.Next(blankMoves.Count)];
-        _logger?.LogInformation($"Easy - Selected random move at ({move.Row}, {move.Col})");
+        logger?.LogInformation("Easy - Selected random move at ({Row}, {Col})", move.Row, move.Col);
         return Maybe<Position>.Some(move);
     }
 }
