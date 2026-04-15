@@ -185,25 +185,17 @@ public class ExtremeStrategyTests
         var strategy = new ExtremeStrategy();
         var board = new GameBoard(PlayerType.Human, PlayerType.Human);
         
-        // O can win in two ways
+        // O can win across top
         board.Board[0, 0].Style = PieceStyle.O;
         board.Board[0, 1].Style = PieceStyle.O;
         board.Board[0, 2].Style = PieceStyle.Blank;
-
-        board.Board[1, 0].Style = PieceStyle.O;
-        board.Board[1, 1].Style = PieceStyle.Blank;
-        board.Board[1, 2].Style = PieceStyle.X;
 
         // Act
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Extreme should block
         Assert.True(move.HasValue);
-        // Must take one of the threatening positions
-        Assert.True(
-            (move.Value.Row == 0 && move.Value.Col == 2) || 
-            (move.Value.Row == 1 && move.Value.Col == 0) ||
-            (move.Value.Row == 1 && move.Value.Col == 1)
-        );
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 }
