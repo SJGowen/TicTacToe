@@ -17,8 +17,12 @@ public class EasyStrategyTests
         var move = strategy.GetMove(board, computerStyle);
 
         // Assert
-        Assert.True(move.HasValue);
-        Assert.Equal(PieceStyle.Blank, board.Board[move.Value.Row, move.Value.Col].Style);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(PieceStyle.Blank, board.Board[m.Row, m.Col].Style);
+        });
+        
     }
 
     [Fact]
@@ -41,7 +45,7 @@ public class EasyStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.False(move.HasValue);
+        Assert.False(move.IsSome);
     }
 
     [Fact]
@@ -59,9 +63,12 @@ public class EasyStrategyTests
         for (int i = 0; i < 5; i++)
         {
             var move = strategy.GetMove(board, PieceStyle.X);
-            if (move.HasValue)
+            if (move.IsSome)
             {
-                moves.Add((move.Value.Row, move.Value.Col));
+                move.IfSome(m =>
+                {
+                    moves.Add((m.Row, m.Col));
+                });
             }
         }
 
@@ -94,8 +101,11 @@ public class EasyStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.HasValue);
-        Assert.Equal(1, move.Value.Row);
-        Assert.Equal(1, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(1, m.Row);
+            Assert.Equal(1, m.Col);
+        });
     }
 }

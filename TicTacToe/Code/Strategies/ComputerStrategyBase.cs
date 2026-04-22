@@ -1,3 +1,5 @@
+using LanguageExt;
+
 namespace TicTacToe.Code.Strategies;
 
 /// <summary>
@@ -7,12 +9,12 @@ namespace TicTacToe.Code.Strategies;
 public abstract class ComputerStrategyBase : IComputerStrategy
 {
     /// <inheritdoc />
-    public Maybe<Position> GetMove(GameBoard board, PieceStyle computerStyle)
+    public Option<Position> GetMove(GameBoard board, PieceStyle computerStyle)
     {
         ArgumentNullException.ThrowIfNull(board);
         var blankMoves = BoardUtilities.GetBlankMoves(board).ToList();
         return blankMoves.Count == 0
-            ? Maybe<Position>.None
+            ? Option<Position>.None
             : ChooseMove(board, blankMoves, computerStyle);
     }
 
@@ -20,7 +22,7 @@ public abstract class ComputerStrategyBase : IComputerStrategy
     /// Selects a move given a non-empty list of available positions.
     /// Guaranteed: <paramref name="board"/> is non-null and <paramref name="blankMoves"/> is non-empty.
     /// </summary>
-    protected abstract Maybe<Position> ChooseMove(
+    protected abstract Option<Position> ChooseMove(
         GameBoard board, List<Position> blankMoves, PieceStyle computerStyle);
 
     /// <summary>Returns the opponent's piece style.</summary>
@@ -29,15 +31,15 @@ public abstract class ComputerStrategyBase : IComputerStrategy
 
     /// <summary>
     /// Returns the first move in <paramref name="moves"/> that immediately wins
-    /// for <paramref name="style"/>, or <see cref="Maybe{Position}.None"/>.
+    /// for <paramref name="style"/>, or <see cref="Option{Position}.None"/>.
     /// </summary>
-    protected static Maybe<Position> FindWinningMove(
+    protected static Option<Position> FindWinningMove(
         GameBoard board, IEnumerable<Position> moves, PieceStyle style)
     {
         foreach (var move in moves)
             if (BoardUtilities.IsWinningMove(board, move, style))
-                return Maybe<Position>.Some(move);
+                return Option.Some(move);
 
-        return Maybe<Position>.None;
+        return Option<Position>.None;
     }
 }

@@ -1,3 +1,4 @@
+using LanguageExt;
 using System.Collections.Immutable;
 
 namespace TicTacToe.Code;
@@ -26,16 +27,16 @@ public static class BoardUtilities
         var newBoard = board.Clone();
         newBoard.Board[move.Row, move.Col].Style = style;
         var winner = newBoard.GetWinner();
-        return winner.HasValue && winner.Value.WinningStyle == style;
+        return winner.Match(wp => wp.WinningStyle == style, () => false);
     }
 
     /// <summary>
     /// Selects a random position from the given array of positions
     /// </summary>
-    public static Maybe<Position> GetRandomMove(ImmutableArray<Position> squares)
+    public static Option<Position> GetRandomMove(ImmutableArray<Position> squares)
     {
         return squares.Length > 0
-            ? Maybe<Position>.Some(squares[Random.Shared.Next(squares.Length)])
-            : Maybe<Position>.None;
+            ? Option.Some(squares[Random.Shared.Next(squares.Length)])
+            : Option<Position>.None;
     }
 }

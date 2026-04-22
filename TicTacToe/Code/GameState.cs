@@ -1,3 +1,4 @@
+using LanguageExt;
 using TicTacToe.Code;
 using TicTacToe.Code.Strategies;
 
@@ -11,7 +12,7 @@ public class GameState
     public string ButtonText => GameStarted ? "Stop Game" : "Start Game";
     public string GameCompleteMessage { get; private set; } = string.Empty;
     public string SelectPlayers { get; private set; } = "Select Players";
-    public Maybe<WinningPlay> WinningPlay { get; private set; } = Maybe<WinningPlay>.None;
+    public Option<WinningPlay> WinningPlay { get; private set; } = Option<WinningPlay>.None;
     public ComputerPlayer ComputerPlayer { get; }
 
     public GameState(ILogger<ComputerPlayer>? logger = null)
@@ -25,7 +26,7 @@ public class GameState
     {
         Board = new GameBoard(playerXType, playerOType, _logger);
         GameStarted = true;
-        WinningPlay = Maybe<WinningPlay>.None;
+        WinningPlay = Option<WinningPlay>.None;
     }
 
     public void StopGame()
@@ -38,14 +39,14 @@ public class GameState
         Board = new GameBoard(playerXType, playerOType, _logger);
         GameStarted = false;
         GameCompleteMessage = string.Empty;
-        WinningPlay = Maybe<WinningPlay>.None;
+        WinningPlay = Option<WinningPlay>.None;
     }
 
     public void UpdateGameCompleteMessage()
     {
         WinningPlay = Board.GetWinner();
-        GameCompleteMessage = WinningPlay.HasValue 
-            ? $"{WinningPlay.Value.WinningStyle} Wins!" 
+        GameCompleteMessage = WinningPlay.IsSome 
+            ? $"{WinningPlay.Match(w => w.WinningStyle, () => PieceStyle.Blank)} Wins!" 
             : "It's a Draw!";
     }
 }

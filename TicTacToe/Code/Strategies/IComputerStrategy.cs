@@ -1,3 +1,5 @@
+using LanguageExt;
+
 namespace TicTacToe.Code.Strategies;
 
 /// <summary>
@@ -8,5 +10,5 @@ public interface IComputerStrategy
     /// <summary>
     /// Gets the next move based on the current board state and the computer's piece style
     /// </summary>
-    Maybe<Position> GetMove(GameBoard board, PieceStyle computerStyle);
+    Option<Position> GetMove(GameBoard board, PieceStyle computerStyle);
 }

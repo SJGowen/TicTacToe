@@ -1,3 +1,4 @@
+using LanguageExt;
 using System.Collections.Concurrent;
 using System.Text;
 
@@ -11,20 +12,19 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
     private const int MaxDepth = 9;
     private readonly ConcurrentDictionary<string, int> _memo = new();
 
-    protected override Maybe<Position> ChooseMove(
+    protected override Option<Position> ChooseMove(
         GameBoard board, List<Position> blankMoves, PieceStyle computerStyle)
     {
         _memo.Clear();
         logger?.LogDebug("Extreme - Available moves: {Count}", blankMoves.Count);
 
         var best = FindBestMove(board, blankMoves, computerStyle);
-        if (best.HasValue)
-            logger?.LogInformation("Extreme - Optimal move at ({Row}, {Col})", best.Value.Row, best.Value.Col);
+        best.IfSome(b => logger?.LogInformation("Extreme - Optimal move at ({Row}, {Col})", b.Row, b.Col));
 
-        return best.HasValue ? best : Maybe<Position>.Some(blankMoves[0]);
+        return best.IsSome ? best : Option.Some(blankMoves[0]);
     }
 
-    private Maybe<Position> FindBestMove(
+    private Option<Position> FindBestMove(
         GameBoard board, List<Position> moves, PieceStyle computerStyle)
     {
         var bestScore = int.MinValue;
@@ -45,8 +45,8 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
         }
 
         return bestMoves.Count > 0
-            ? Maybe<Position>.Some(bestMoves[Random.Shared.Next(bestMoves.Count)])
-            : Maybe<Position>.None;
+            ? Option.Some(bestMoves[Random.Shared.Next(bestMoves.Count)])
+            : Option<Position>.None;
     }
 
     private int Minimax(GameBoard board, int depth, bool isMaximizing, PieceStyle computerStyle)
@@ -55,10 +55,11 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
         if (_memo.TryGetValue(hash, out var cached)) return cached;
 
         var terminal = EvaluateTerminal(board, depth, computerStyle);
-        if (terminal.HasValue)
+        if (terminal.IsSome)
         {
-            _memo.TryAdd(hash, terminal.Value);
-            return terminal.Value;
+            var val = terminal.Match(v => v, () => 0);
+            _memo.TryAdd(hash, val);
+            return val;
         }
 
         var result = isMaximizing
@@ -69,16 +70,16 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
         return result;
     }
 
-    private static Maybe<int> EvaluateTerminal(GameBoard board, int depth, PieceStyle computerStyle)
+    private static Option<int> EvaluateTerminal(GameBoard board, int depth, PieceStyle computerStyle)
     {
         var winner = board.GetWinner();
-        if (winner.HasValue)
-            return Maybe<int>.Some(winner.Value.WinningStyle == computerStyle ? 10 - depth : depth - 10);
+        if (winner.IsSome)
+            return Option.Some(winner.Match(w => w.WinningStyle == computerStyle ? 10 - depth : depth - 10, () => 0));
 
         if (board.ItsADraw() || depth >= MaxDepth || !BoardUtilities.GetBlankMoves(board).Any())
-            return Maybe<int>.Some(0);
+            return Option.Some(0);
 
-        return Maybe<int>.None;
+        return Option<int>.None;
     }
 
     private int MaximizingScore(GameBoard board, int depth, PieceStyle computerStyle)

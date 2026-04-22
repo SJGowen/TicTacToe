@@ -1,3 +1,5 @@
+using LanguageExt;
+
 namespace TicTacToe.Code.Strategies;
 
 /// <summary>
@@ -5,12 +7,12 @@ namespace TicTacToe.Code.Strategies;
 /// </summary>
 public class EasyStrategy(ILogger<EasyStrategy>? logger = null) : ComputerStrategyBase
 {
-    protected override Maybe<Position> ChooseMove(
+    protected override Option<Position> ChooseMove(
         GameBoard board, List<Position> blankMoves, PieceStyle computerStyle)
     {
         logger?.LogDebug("Easy - Available moves: {Count}", blankMoves.Count);
         var move = blankMoves[Random.Shared.Next(blankMoves.Count)];
         logger?.LogInformation("Easy - Selected random move at ({Row}, {Col})", move.Row, move.Col);
-        return Maybe<Position>.Some(move);
+        return Option.Some(move);
     }
 }

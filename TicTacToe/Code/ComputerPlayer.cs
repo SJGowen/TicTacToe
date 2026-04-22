@@ -1,3 +1,4 @@
+using LanguageExt;
 using TicTacToe.Code.Strategies;
 
 namespace TicTacToe.Code;
@@ -10,7 +11,7 @@ public class ComputerPlayer(PieceStyle style, IComputerStrategy strategy, ILogge
     /// <summary>
     /// Gets the computer's next move based on the current board state and the configured strategy
     /// </summary>
-    public override Maybe<Position> GetMove(GameBoard board)
+    public override Option<Position> GetMove(GameBoard board)
     {
         ArgumentNullException.ThrowIfNull(board);
         return _strategy.GetMove(board, Style);

@@ -1,13 +1,10 @@
+using LanguageExt;
+
 namespace TicTacToe.Code;
 
-public abstract class Player
+public abstract class Player(PieceStyle style)
 {
-    public PieceStyle Style { get; }
+    public PieceStyle Style { get; } = style;
 
-    protected Player(PieceStyle style)
-    {
-        Style = style;
-    }
-
-    public abstract Maybe<Position> GetMove(GameBoard board);
+    public abstract Option<Position> GetMove(GameBoard board);
 }

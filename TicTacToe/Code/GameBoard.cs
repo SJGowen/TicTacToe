@@ -1,4 +1,5 @@
-﻿using TicTacToe.Code.Strategies;
+﻿using LanguageExt;
+using TicTacToe.Code.Strategies;
 
 namespace TicTacToe.Code;
 
@@ -7,10 +8,10 @@ public class GameBoard
     private readonly ILogger<ComputerPlayer>? _logger;
     public GamePiece[,] Board { get; private set; }
     public PieceStyle CurrentStyle { get; private set; } = PieceStyle.X;
-    public bool GameComplete => GetWinner().HasValue || ItsADraw();
+    public bool GameComplete => GetWinner().IsSome || ItsADraw();
     
-    private Player _playerX;
-    private Player _playerO;
+    private readonly Player _playerX;
+    private readonly Player _playerO;
     private Player CurrentPlayer => CurrentStyle == PieceStyle.X ? _playerX : _playerO;
 
     public GameBoard(PlayerType playerXType, PlayerType playerOType, ILogger<ComputerPlayer>? logger = null)
@@ -78,30 +79,30 @@ public class GameBoard
         if (CurrentPlayer is ComputerPlayer computerPlayer)
         {
             var move = await Task.Run(() => computerPlayer.GetMove(this));
-            if (move.HasValue)
-            {
-                Board[move.Value.Row, move.Value.Col].Style = computerPlayer.Style;
-                SwitchPlayers();
-            }
+            move.IfSome(p =>
+            { 
+                Board[p.Row, p.Col].Style = computerPlayer.Style; 
+                SwitchPlayers(); 
+            });
         }
     }
 
     public bool IsGamePieceAWinningPiece(int row, int col)
     {
         var winningPlay = GetWinner();
-        return winningPlay.HasValue && winningPlay.Value.WinningMoves?.Contains($"{row},{col}") == true;
+        return winningPlay.IsSome && winningPlay.Match(wp => wp.WinningMoves?.Contains($"{row},{col}") == true, () => false);
     }
 
     public bool ItsADraw() => !Board.Cast<GamePiece>().Any(piece => piece.Style == PieceStyle.Blank);
 
-    public Maybe<WinningPlay> GetWinner()
+    public Option<WinningPlay> GetWinner()
     {
         // Check rows and columns
         for (int i = 0; i < Constants.BoardSize; i++)
         {
             if (Board[i, 0].Style != PieceStyle.Blank && Board[i, 0].Style == Board[i, 1].Style && Board[i, 1].Style == Board[i, 2].Style)
             {
-                return Maybe<WinningPlay>.Some(new WinningPlay
+                return Option.Some(new WinningPlay
                 {
                     WinningStyle = Board[i, 0].Style,
                     WinningMoves = [$"{i},0", $"{i},1", $"{i},2"]
@@ -109,7 +110,7 @@ public class GameBoard
             }
             if (Board[0, i].Style != PieceStyle.Blank && Board[0, i].Style == Board[1, i].Style && Board[1, i].Style == Board[2, i].Style)
             {
-                return Maybe<WinningPlay>.Some(new WinningPlay
+                return Option.Some(new WinningPlay
                 {
                     WinningStyle = Board[0, i].Style,
                     WinningMoves = [$"0,{i}", $"1,{i}", $"2,{i}"]
@@ -120,7 +121,7 @@ public class GameBoard
         // Check diagonals
         if (Board[0, 0].Style != PieceStyle.Blank && Board[0, 0].Style == Board[1, 1].Style && Board[1, 1].Style == Board[2, 2].Style)
         {
-            return Maybe<WinningPlay>.Some(new WinningPlay
+            return Option.Some(new WinningPlay
             {
                 WinningStyle = Board[0, 0].Style,
                 WinningMoves = ["0,0", "1,1", "2,2"]
@@ -128,14 +129,14 @@ public class GameBoard
         }
         if (Board[0, 2].Style != PieceStyle.Blank && Board[0, 2].Style == Board[1, 1].Style && Board[1, 1].Style == Board[2, 0].Style)
         {
-            return Maybe<WinningPlay>.Some(new WinningPlay
+            return Option.Some(new WinningPlay
             {
                 WinningStyle = Board[0, 2].Style,
                 WinningMoves = ["0,2", "1,1", "2,0"]
             });
         }
 
-        return Maybe<WinningPlay>.None;
+        return Option<WinningPlay>.None;
     }
 
     private void SwitchPlayers()
