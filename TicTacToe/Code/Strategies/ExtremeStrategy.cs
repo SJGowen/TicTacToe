@@ -36,7 +36,11 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
             testBoard.Board[move.Row, move.Col].Style = computerStyle;
             var score = Minimax(testBoard, 0, false, computerStyle);
 
-            if (score > bestScore) { bestScore = score; bestMoves.Clear(); }
+            if (score > bestScore)
+            { 
+                bestScore = score;
+                bestMoves.Clear(); 
+            }
             if (score >= bestScore) bestMoves.Add(move);
         }
 
