@@ -6,7 +6,7 @@ namespace TicTacToe.Tests;
 public class EasyStrategyTests
 {
     [Fact]
-    public void GetMove_WithAvailableMoves_ReturnsRandomMove()
+    public void GetMove_WithAvailableMoves_ReturnsRandomMoveBlankPiece()
     {
         // Arrange
         var strategy = new EasyStrategy();
@@ -22,7 +22,6 @@ public class EasyStrategyTests
         {
             Assert.Equal(PieceStyle.Blank, board.Board[m.Row, m.Col].Style);
         });
-        
     }
 
     [Fact]

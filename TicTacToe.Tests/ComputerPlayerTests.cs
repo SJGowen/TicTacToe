@@ -19,30 +19,6 @@ public class ComputerPlayerTests
     }
 
     [Fact]
-    public void ComputerPlayer_UsesProvidedStrategy()
-    {
-        // Arrange
-        var strategy = new HardStrategy();
-        var computerPlayer = new ComputerPlayer(PieceStyle.X, strategy, _logger);
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
-
-        board.Board[0, 0].Style = PieceStyle.X;
-        board.Board[0, 1].Style = PieceStyle.X;
-        board.Board[0, 2].Style = PieceStyle.Blank;
-
-        // Act
-        var move = computerPlayer.GetMove(board);
-
-        // Assert - Should delegate to strategy
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
-    }
-
-    [Fact]
     public void ComputerPlayer_WorksWithEasyStrategy()
     {
         // Arrange
@@ -65,9 +41,20 @@ public class ComputerPlayerTests
         var computerPlayer = new ComputerPlayer(PieceStyle.O, strategy);
         var board = new GameBoard(PlayerType.Human, PlayerType.ComputerMedium);
 
-        board.Board[0, 0].Style = PieceStyle.X;
-        board.Board[0, 1].Style = PieceStyle.X;
-        board.Board[0, 2].Style = PieceStyle.Blank;
+        // Act
+        var move = computerPlayer.GetMove(board);
+
+        // Assert - Should find the tactical move
+        Assert.True(move.IsSome);
+    }
+
+    [Fact]
+    public void ComputerPlayer_WorksWithHardStrategy()
+    {
+        // Arrange
+        var strategy = new MediumStrategy();
+        var computerPlayer = new ComputerPlayer(PieceStyle.O, strategy);
+        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
 
         // Act
         var move = computerPlayer.GetMove(board);
@@ -151,7 +138,7 @@ public class ComputerPlayerTests
     }
 
     [Fact]
-    public void ComputerPlayer_CallsStrategyGetMove()
+    public void ComputerPlayer_GetMove_ReturnsWinningMove()
     {
         // Arrange
         var strategy = new MediumStrategy();

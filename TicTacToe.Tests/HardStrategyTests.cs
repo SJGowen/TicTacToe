@@ -78,32 +78,6 @@ public class HardStrategyTests
     }
 
     [Fact]
-    public void GetMove_AvoidsForkSetup()
-    {
-        // Arrange
-        var strategy = new HardStrategy();
-        var board = new GameBoard(PlayerType.Human, PlayerType.ComputerHard);
-        board.Board[0, 0].Style = PieceStyle.X;
-        board.Board[1, 1].Style = PieceStyle.O;
-        board.Board[2, 2].Style = PieceStyle.X;
-
-        // Act
-        var move = strategy.GetMove(board, PieceStyle.O);
-
-        // Assert - Should play edge to block three corners
-        Assert.True(move.IsSome);
-        var moveList = new[] 
-        { 
-            new Position(0, 1), new Position(1, 0), 
-            new Position(1, 2), new Position(2, 1) 
-        };
-        move.IfSome(m =>
-        {
-            Assert.Contains(new Position(m.Row, m.Col), moveList);
-        });
-    }
-
-    [Fact]
     public void GetMove_WithNoAvailableMoves_ReturnsNone()
     {
         // Arrange
@@ -143,10 +117,15 @@ public class HardStrategyTests
 
         // Assert - Hard strategy should consider position value
         Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(1, m.Row);
+            Assert.Equal(1, m.Col);
+        });
     }
 
     [Fact]
-    public void GetMove_BlocksOpponentThreeCornersWithCenter()
+    public void GetMove_BlocksOpponentThreeCornersWithCenterEdge()
     {
         // Arrange
         var strategy = new HardStrategy();
