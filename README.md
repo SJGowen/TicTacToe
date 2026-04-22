@@ -179,6 +179,7 @@ TicTacToe/
 ├── Code/
 │   ├── Strategies/          # AI Strategy implementations
 │   │   ├── IComputerStrategy.cs
+│   │   ├── ComputerStrategyBase.cs
 │   │   ├── EasyStrategy.cs
 │   │   ├── MediumStrategy.cs
 │   │   ├── HardStrategy.cs
