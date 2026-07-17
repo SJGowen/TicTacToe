@@ -30,7 +30,7 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert - Should return a valid move
-        Assert.True(move.HasValue);
+        Assert.True(move.IsSome);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert - Should find the tactical move
-        Assert.True(move.HasValue);
+        Assert.True(move.IsSome);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert - Should find the tactical move
-        Assert.True(move.HasValue);
+        Assert.True(move.IsSome);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert - Should return optimal move via minimax
-        Assert.True(move.HasValue);
+        Assert.True(move.IsSome);
     }
 
     [Fact]
@@ -94,9 +94,12 @@ public class ComputerPlayerTests
         var moveFromPlayer = computerPlayer.GetMove(board);
 
         // Assert
-        Assert.True(moveFromPlayer.HasValue);
-        Assert.Equal(0, moveFromPlayer.Value.Row);
-        Assert.Equal(2, moveFromPlayer.Value.Col);
+        Assert.True(moveFromPlayer.IsSome);
+        moveFromPlayer.IfSome(m =>
+        {
+            Assert.Equal(0, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 
     [Fact]
@@ -120,7 +123,7 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert
-        Assert.False(move.HasValue);
+        Assert.False(move.IsSome);
     }
 
     [Fact]
@@ -150,8 +153,11 @@ public class ComputerPlayerTests
         var move = computerPlayer.GetMove(board);
 
         // Assert - Should find the winning move
-        Assert.True(move.HasValue);
-        Assert.Equal(0, move.Value.Row);
-        Assert.Equal(2, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(0, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 }

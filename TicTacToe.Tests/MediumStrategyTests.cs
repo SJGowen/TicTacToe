@@ -19,9 +19,12 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.HasValue);
-        Assert.Equal(0, move.Value.Row);
-        Assert.Equal(2, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(0, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 
     [Fact]
@@ -38,9 +41,12 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.HasValue);
-        Assert.Equal(0, move.Value.Row);
-        Assert.Equal(2, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(0, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 
     [Fact]
@@ -55,8 +61,11 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.HasValue);
-        Assert.Equal(PieceStyle.Blank, board.Board[move.Value.Row, move.Value.Col].Style);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(PieceStyle.Blank, board.Board[m.Row, m.Col].Style);
+        });
     }
 
     [Fact]
@@ -77,9 +86,12 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Should prioritize winning over blocking
-        Assert.True(move.HasValue);
-        Assert.Equal(0, move.Value.Row);
-        Assert.Equal(2, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(0, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 
     [Fact]
@@ -102,7 +114,7 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.False(move.HasValue);
+        Assert.False(move.IsSome);
     }
 
     [Fact]
@@ -121,8 +133,11 @@ public class MediumStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Must take the winning move
-        Assert.True(move.HasValue);
-        Assert.Equal(2, move.Value.Row);
-        Assert.Equal(2, move.Value.Col);
+        Assert.True(move.IsSome);
+        move.IfSome(m =>
+        {
+            Assert.Equal(2, m.Row);
+            Assert.Equal(2, m.Col);
+        });
     }
 }
