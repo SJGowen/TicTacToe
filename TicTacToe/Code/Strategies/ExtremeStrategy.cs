@@ -41,7 +41,8 @@ public class ExtremeStrategy(ILogger<ExtremeStrategy>? logger = null) : Computer
                 bestScore = score;
                 bestMoves.Clear(); 
             }
-            if (score >= bestScore) bestMoves.Add(move);
+
+            if (score == bestScore) bestMoves.Add(move);
         }
 
         return bestMoves.Count > 0
