@@ -28,12 +28,9 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -50,12 +47,9 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -69,12 +63,9 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(1, m.Row);
-            Assert.Equal(1, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(1, move.Value.Row);
+        Assert.Equal(1, move.Value.Col);
     }
 
     [Fact]
@@ -97,7 +88,7 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.False(move.IsSome);
+        Assert.False(move.HasValue);
     }
 
     [Fact]
@@ -116,12 +107,9 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.O);
 
         // Assert - Hard strategy should consider position value
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(1, m.Row);
-            Assert.Equal(1, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(1, move.Value.Row);
+        Assert.Equal(1, move.Value.Col);
     }
 
     [Fact]
@@ -138,16 +126,14 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.O);
 
         // Assert - Should block three corners by taking edge
-        Assert.True(move.IsSome);
+        Assert.True(move.HasValue);
         var edgePositions = new[] 
         { 
             new Position(0, 1), new Position(1, 0), 
             new Position(1, 2), new Position(2, 1) 
         };
-        move.IfSome(m =>
-        {
-            Assert.Contains(new Position(m.Row, m.Col), edgePositions);
-        });
+        
+        Assert.Contains(new Position(move.Value.Row, move.Value.Col), edgePositions);
     }
 
     [Fact]
@@ -171,11 +157,8 @@ public class HardStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Should win, not block
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 }

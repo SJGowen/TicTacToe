@@ -19,12 +19,9 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -39,11 +36,8 @@ public class ExtremeStrategyTests
 
         // Assert - On empty board, all first moves are equivalent via minimax
         // So we just verify it returns a valid move
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(PieceStyle.Blank, board.Board[m.Row, m.Col].Style);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(PieceStyle.Blank, board.Board[move.Value.Row, move.Value.Col].Style);
     }
 
     [Fact]
@@ -60,12 +54,9 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -88,7 +79,7 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.False(move.IsSome);
+        Assert.False(move.HasValue);
     }
 
     [Fact]
@@ -104,11 +95,8 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Should find optimal move via minimax
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(PieceStyle.Blank, board.Board[m.Row, m.Col].Style);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(PieceStyle.Blank, board.Board[move.Value.Row, move.Value.Col].Style);
     }
 
     [Fact]
@@ -132,12 +120,9 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Minimax should evaluate winning move as better
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -161,12 +146,9 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Extreme should win when possible
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(2, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(2, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 
     [Fact]
@@ -191,12 +173,9 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(1, m.Row);
-            Assert.Equal(1, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(1, move.Value.Row);
+        Assert.Equal(1, move.Value.Col);
     }
 
     [Fact]
@@ -215,11 +194,8 @@ public class ExtremeStrategyTests
         var move = strategy.GetMove(board, PieceStyle.X);
 
         // Assert - Extreme should block
-        Assert.True(move.IsSome);
-        move.IfSome(m =>
-        {
-            Assert.Equal(0, m.Row);
-            Assert.Equal(2, m.Col);
-        });
+        Assert.True(move.HasValue);
+        Assert.Equal(0, move.Value.Row);
+        Assert.Equal(2, move.Value.Col);
     }
 }
