@@ -98,7 +98,7 @@ The AI uses sophisticated position evaluation with strategic priorities. Challen
 
 ```csharp
 // HardStrategy - Position Hierarchy
-Prioritizes: Win > Block > Center > Anti-fork > Corners > Edges
+Prioritizes: Win > Block > Center > Corners > Edges
 Uses advanced tactics to control the board
 ```
 
