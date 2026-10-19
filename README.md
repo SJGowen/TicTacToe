@@ -1,6 +1,6 @@
 # 🎮 TicTacToe - Blazor WebAssembly Game
 
-## 🎮 https://sjgowen.github.io/TicTacToe
+### 🎮 https://sjgowen.github.io/TicTacToe
 
 A modern, interactive Tic Tac Toe game built with **Blazor WebAssembly** and **.NET 10**, featuring four distinct AI difficulty levels with strategic gameplay at each level.
 
