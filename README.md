@@ -127,7 +127,7 @@ The AI uses minimax algorithm to evaluate all possible future moves. Plays optim
 // ExtremeStrategy - Minimax Algorithm
 Evaluates entire game tree recursively
 Scores terminal states: Win=10, Draw=0, Loss=-10
-Returns move with highest minimax score
+Returns random move from moves with highest minimax score
 Guarantees optimal play
 ```
 
