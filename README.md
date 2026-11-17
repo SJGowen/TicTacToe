@@ -2,7 +2,7 @@
 
 ### 🎮 https://sjgowen.github.io/TicTacToe
 
-A modern, interactive Tic Tac Toe game built with **Blazor WebAssembly** and **.NET 10**, featuring four distinct AI difficulty levels with strategic gameplay at each level.
+A modern, interactive Tic Tac Toe game built with **Blazor WebAssembly** and **.NET 10**, featuring four distinct difficulty levels with strategic gameplay at each level.
 
 ![Game Screenshot](ScreenShot.png)
 
